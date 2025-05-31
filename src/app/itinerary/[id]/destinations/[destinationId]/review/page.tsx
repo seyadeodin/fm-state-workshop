@@ -3,17 +3,30 @@ import { destinations } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { confirmBooking } from './actions';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Plane,
+  Hotel,
+  MapPin,
+  Calendar,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react';
 
 type Flight = {
   airline: string;
   departureTime: string;
   arrivalTime: string;
+  price?: number;
 };
 
-type Hotel = {
+type HotelBooking = {
   name: string;
   checkIn: string;
   checkOut: string;
+  price?: number;
 };
 
 export default async function ReviewPage({
@@ -34,97 +47,181 @@ export default async function ReviewPage({
     notFound();
   }
 
-  console.log({ destination });
-
   const flight = destination.flightBookings[0] as Flight | undefined;
-  const hotel = destination.hotelBookings[0] as Hotel | undefined;
+  const hotel = destination.hotelBookings[0] as HotelBooking | undefined;
+
+  async function handleConfirmBooking() {
+    'use server';
+    await confirmBooking(destinationId, id);
+  }
 
   return (
-    <div className="layout-content-container flex flex-col max-w-[960px] flex-1">
-      <div className="flex flex-wrap gap-2 p-4">
+    <div className="container mx-auto p-6 max-w-4xl">
+      {/* Breadcrumb */}
+      <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
         <a
-          className="text-[#60768a] dark:text-[#8b9bab] text-base font-medium leading-normal"
           href={`/itinerary/${id}`}
+          className="hover:text-foreground transition-colors"
         >
-          Your trip
+          Your Trip
         </a>
-        <span className="text-[#60768a] dark:text-[#8b9bab] text-base font-medium leading-normal">
-          /
-        </span>
-        <span className="text-[#111518] dark:text-white text-base font-medium leading-normal">
-          Review and book
-        </span>
-      </div>
-      <div className="flex flex-wrap justify-between gap-3 p-4">
-        <p className="text-[#111518] dark:text-white tracking-light text-[32px] font-bold leading-tight min-w-72">
-          Review and book
-        </p>
-      </div>
-      <h2 className="text-[#111518] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
-        Flights
-      </h2>
-      <div className="p-4">
-        <div className="flex items-stretch justify-between gap-4 rounded-xl">
-          <div className="flex flex-col gap-1 flex-[2_2_0px]">
-            <p className="text-[#60768a] dark:text-[#8b9bab] text-sm font-normal leading-normal">
-              Round trip
-            </p>
-            <p className="text-[#111518] dark:text-white text-base font-bold leading-tight">
-              {flight?.airline || 'No flight selected'}
-            </p>
-            <p className="text-[#60768a] dark:text-[#8b9bab] text-sm font-normal leading-normal">
-              {flight
-                ? `${flight.departureTime} - ${flight.arrivalTime}`
-                : 'No flight details'}
-            </p>
-          </div>
-          <div
-            className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex-1"
-            style={{
-              backgroundImage:
-                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuD77Czg7MXp6v4I117l-gqSOAYTOdKYHoVhKLxUm_NbGA3L9LspJ-qPthIEOh413-Vvozo7yuZ_i1hi3U5KzvK7QNvsTRjnX9XnpZnu46qzmx4UrGyM0qlTM8HxvLRFxQoN6xx7WnamimurLyzsUWXI4gfJJPgtj6UaDtsqkXx07nQne5ThuM9Ree6BZ76OSLu2ukhRb2OmBmqK9iHOW4ANFAhH1aF2-5A61RWSNPrvnC-9Kqk0paqBrg3liSDEI59T9miAnRecyIM")',
-            }}
-          ></div>
+        <span>/</span>
+        <span className="text-foreground font-medium">Review and Book</span>
+      </nav>
+
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-8">
+        <CheckCircle className="h-8 w-8 text-primary" />
+        <div>
+          <h1 className="text-3xl font-bold">Review and Book</h1>
+          <p className="text-muted-foreground">
+            Review your selections for {destination.name}
+          </p>
         </div>
       </div>
-      <h2 className="text-[#111518] dark:text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
-        Hotel
-      </h2>
-      <div className="p-4">
-        <div className="flex items-stretch justify-between gap-4 rounded-xl">
-          <div className="flex flex-col gap-1 flex-[2_2_0px]">
-            <p className="text-[#111518] dark:text-white text-base font-bold leading-tight">
-              {hotel?.name || 'No hotel selected'}
-            </p>
-            <p className="text-[#60768a] dark:text-[#8b9bab] text-sm font-normal leading-normal">
-              {hotel
-                ? `${hotel.checkIn} - ${hotel.checkOut}`
-                : 'No hotel details'}
-            </p>
-          </div>
-          <div
-            className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex-1"
-            style={{
-              backgroundImage:
-                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBrhcQ-yN96Hu15JT83oXSe9vKUCgUaC-9qRdvMNIka0ve69aU9GS14L0dgkxX9bheVA6qOjSSQ7CDFPXGXbUa-ulS09JNCkSrxhRvTeSLYUeV31qNBawWwsnT-qYzlXKanSh-FfPpc1AztlTGBnEjkIjXwDTYcFoyXCgG3Q8CAMKxjMTIzfcQmQORx1kkwRgpxk8TZnd-gWh7DZiLenE7uRjw9qFuQwrB-uTfWG6vJFJUfIR9CieEPMYxyAzgJQ-3egFhTk0_y6p4")',
-            }}
-          ></div>
+
+      <div className="space-y-6">
+        {/* Flight Review */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plane className="h-5 w-5 text-primary" />
+              Flight Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {flight ? (
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default">Round Trip</Badge>
+                    <h3 className="font-semibold">{flight.airline}</h3>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {flight.departureTime} - {flight.arrivalTime}
+                    </span>
+                  </div>
+                  {flight.price && (
+                    <p className="text-lg font-semibold text-green-600">
+                      ${flight.price}
+                    </p>
+                  )}
+                </div>
+                <div className="w-32 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                  <Plane className="h-8 w-8 text-blue-600" />
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <AlertCircle className="h-5 w-5" />
+                <div>
+                  <p className="font-medium">No flight selected</p>
+                  <p className="text-sm">
+                    You haven&apos;t selected a flight yet
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Hotel Review */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Hotel className="h-5 w-5 text-primary" />
+              Hotel Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {hotel ? (
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <h3 className="font-semibold">{hotel.name}</h3>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      Check-in: {new Date(hotel.checkIn).toLocaleDateString()}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      Check-out: {new Date(hotel.checkOut).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {hotel.price && (
+                    <p className="text-lg font-semibold text-green-600">
+                      ${hotel.price}
+                    </p>
+                  )}
+                </div>
+                <div className="w-32 h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
+                  <Hotel className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <AlertCircle className="h-5 w-5" />
+                <div>
+                  <p className="font-medium">No hotel selected</p>
+                  <p className="text-sm">
+                    You haven&apos;t selected a hotel yet
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Destination Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              Destination Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <h3 className="font-semibold">{destination.name}</h3>
+              <p className="text-muted-foreground">📍 {destination.location}</p>
+              <div className="flex items-center gap-4 text-sm">
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(
+                    destination.arrivalDate
+                  ).toLocaleDateString()} -{' '}
+                  {new Date(destination.departureDate).toLocaleDateString()}
+                </span>
+                <Badge variant="outline">
+                  {Math.ceil(
+                    (new Date(destination.departureDate).getTime() -
+                      new Date(destination.arrivalDate).getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  )}{' '}
+                  days
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Booking Actions */}
+        <div className="flex justify-end pt-4">
+          <form action={handleConfirmBooking}>
+            <Button
+              type="submit"
+              size="lg"
+              className="min-w-32"
+              disabled={!flight && !hotel}
+            >
+              <CheckCircle className="h-4 w-4" />
+              Confirm Booking
+            </Button>
+          </form>
         </div>
       </div>
-      <form
-        action={async () => {
-          'use server';
-          await confirmBooking(destinationId, id);
-        }}
-        className="flex px-4 py-3 justify-end"
-      >
-        <button
-          type="submit"
-          className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 bg-[#0b80ee] text-white text-base font-bold leading-normal tracking-[0.015em]"
-        >
-          <span className="truncate">Book</span>
-        </button>
-      </form>
     </div>
   );
 }

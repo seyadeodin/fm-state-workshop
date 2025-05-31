@@ -1,59 +1,66 @@
 import { createItinerary } from './actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MapPin, Users } from 'lucide-react';
 
 export default function NewItineraryPage() {
   return (
-    <form
-      action={createItinerary}
-      className="flex flex-col gap-6 max-w-2xl mx-auto"
-    >
-      <div className="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 max-w-[960px] flex-1">
-        <div className="flex flex-wrap justify-between gap-3 p-4">
-          <p className="text-[#121416] dark:text-white tracking-light text-[32px] font-bold leading-tight min-w-72">
-            New itinerary
-          </p>
-        </div>
-        <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
-          <label className="flex flex-col min-w-40 flex-1">
-            <p className="text-[#121416] dark:text-white text-base font-medium leading-normal pb-2">
-              Name
-            </p>
-            <input
-              placeholder="Name"
-              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#121416] dark:text-white focus:outline-0 focus:ring-0 border-none bg-[#f1f2f4] dark:bg-gray-800 focus:border-none h-14 placeholder:text-[#6a7681] dark:placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
-              name="name"
-            />
-          </label>
-        </div>
-        <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
-          <label className="flex flex-col min-w-40 flex-1">
-            <p className="text-[#121416] dark:text-white text-base font-medium leading-normal pb-2">
-              Description
-            </p>
-            <textarea
-              placeholder="Description"
-              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#121416] dark:text-white focus:outline-0 focus:ring-0 border-none bg-[#f1f2f4] dark:bg-gray-800 focus:border-none min-h-36 placeholder:text-[#6a7681] dark:placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
-              name="description"
-            ></textarea>
-          </label>
-        </div>
-        <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
-          <label className="flex flex-col min-w-40 flex-1">
-            <p className="text-[#121416] dark:text-white text-base font-medium leading-normal pb-2">
-              Number of people
-            </p>
-            <input
-              placeholder="Number of people"
-              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#121416] dark:text-white focus:outline-0 focus:ring-0 border-none bg-[#f1f2f4] dark:bg-gray-800 focus:border-none h-14 placeholder:text-[#6a7681] dark:placeholder:text-gray-400 p-4 text-base font-normal leading-normal"
-              name="people"
-            />
-          </label>
-        </div>
-        <div className="flex px-4 py-3 justify-end">
-          <button className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-[#dce8f3] dark:bg-gray-700 text-[#121416] dark:text-white text-sm font-bold leading-normal tracking-[0.015em]">
-            <span className="truncate">Create</span>
-          </button>
-        </div>
-      </div>
-    </form>
+    <div className="container mx-auto p-6 max-w-2xl">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <MapPin className="h-6 w-6 text-primary" />
+            <CardTitle className="text-2xl">Create New Itinerary</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <form action={createItinerary} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Trip Name</Label>
+              <Input
+                id="name"
+                name="name"
+                placeholder="Enter trip name (e.g., Summer Vacation 2024)"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                placeholder="Describe your trip plans, goals, or any special notes..."
+                className="min-h-[120px]"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="people" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Number of People
+              </Label>
+              <Input
+                id="people"
+                name="people"
+                type="number"
+                min="1"
+                placeholder="How many people will be traveling?"
+                required
+              />
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <Button type="submit" size="lg">
+                Create Itinerary
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -2,6 +2,17 @@ import { db } from '@/db';
 import { destinations } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  MapPin,
+  Calendar,
+  Settings,
+  Plane,
+  Hotel,
+  Car,
+  Star,
+} from 'lucide-react';
 
 export default async function DestinationPage({
   params,
@@ -17,76 +28,139 @@ export default async function DestinationPage({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-[#121416] dark:text-white">
-          {destination.name}
-        </h1>
-        <button className="px-4 py-2 rounded-lg border border-[#f1f2f4] dark:border-gray-700 text-[#121416] dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-          Edit Destination
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="p-4 rounded-lg border border-[#f1f2f4] dark:border-gray-700 bg-white dark:bg-gray-800">
-          <h2 className="text-lg font-semibold text-[#121416] dark:text-white mb-2">
-            Location
-          </h2>
-          <p className="text-[#121416] dark:text-white">
-            {destination.location}
-          </p>
-        </div>
-
-        <div className="p-4 rounded-lg border border-[#f1f2f4] dark:border-gray-700 bg-white dark:bg-gray-800">
-          <h2 className="text-lg font-semibold text-[#121416] dark:text-white mb-2">
-            Dates
-          </h2>
-          <p className="text-[#121416] dark:text-white">
-            Arrival: {new Date(destination.arrivalDate).toLocaleDateString()}
-          </p>
-          <p className="text-[#121416] dark:text-white">
-            Departure:{' '}
-            {new Date(destination.departureDate).toLocaleDateString()}
-          </p>
-        </div>
-
-        <div className="p-4 rounded-lg border border-[#f1f2f4] dark:border-gray-700 bg-white dark:bg-gray-800">
-          <h2 className="text-lg font-semibold text-[#121416] dark:text-white mb-2">
-            Bookings
-          </h2>
-          <div className="flex flex-col gap-2">
-            <a
-              href={`/itinerary/${params.id}/destinations/${params.destinationId}/flight`}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              Book Flight
-            </a>
-            <a
-              href={`/itinerary/${params.id}/destinations/${params.destinationId}/hotel`}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              Book Hotel
-            </a>
-            <a
-              href={`/itinerary/${params.id}/destinations/${params.destinationId}/car`}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              Book Car
-            </a>
+    <div className="container mx-auto p-6 max-w-6xl">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <MapPin className="h-8 w-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold">{destination.name}</h1>
+            <p className="text-muted-foreground">📍 {destination.location}</p>
           </div>
         </div>
+        <Button variant="outline">
+          <Settings className="h-4 w-4" />
+          Edit Destination
+        </Button>
+      </div>
 
-        <div className="p-4 rounded-lg border border-[#f1f2f4] dark:border-gray-700 bg-white dark:bg-gray-800">
-          <h2 className="text-lg font-semibold text-[#121416] dark:text-white mb-2">
-            Reviews
-          </h2>
-          <a
-            href={`/itinerary/${params.id}/destinations/${params.destinationId}/review`}
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            View Reviews
-          </a>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              Travel Dates
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground mb-1">
+                Arrival
+              </p>
+              <p className="font-semibold">
+                {new Date(destination.arrivalDate).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground mb-1">
+                Departure
+              </p>
+              <p className="font-semibold">
+                {new Date(destination.departureDate).toLocaleDateString(
+                  'en-US',
+                  {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  }
+                )}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground mb-1">
+                Duration
+              </p>
+              <p className="font-semibold">
+                {Math.ceil(
+                  (new Date(destination.departureDate).getTime() -
+                    new Date(destination.arrivalDate).getTime()) /
+                    (1000 * 60 * 60 * 24)
+                )}{' '}
+                days
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plane className="h-5 w-5 text-primary" />
+              Transportation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <a
+                href={`/itinerary/${params.id}/destinations/${params.destinationId}/flight`}
+              >
+                <Plane className="h-4 w-4" />
+                Book Flight
+              </a>
+            </Button>
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <a
+                href={`/itinerary/${params.id}/destinations/${params.destinationId}/car`}
+              >
+                <Car className="h-4 w-4" />
+                Rent Car
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Hotel className="h-5 w-5 text-primary" />
+              Accommodation
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <a
+                href={`/itinerary/${params.id}/destinations/${params.destinationId}/hotel`}
+              >
+                <Hotel className="h-4 w-4" />
+                Book Hotel
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2 lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-primary" />
+              Reviews & Recommendations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" className="w-full justify-start" asChild>
+              <a
+                href={`/itinerary/${params.id}/destinations/${params.destinationId}/review`}
+              >
+                <Star className="h-4 w-4" />
+                View Reviews
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
