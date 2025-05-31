@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "e5330a7f-795b-419c-9447-cdc062d280a7",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "a49c520a-1489-4db2-b620-175c396b921e",
+  "prevId": "e5330a7f-795b-419c-9447-cdc062d280a7",
   "tables": {
     "activities": {
       "name": "activities",
@@ -317,10 +317,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "destination_id": {
           "name": "destination_id",
@@ -391,10 +391,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "destination_id": {
           "name": "destination_id",
