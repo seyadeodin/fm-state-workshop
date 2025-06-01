@@ -4,15 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
+import { getFlightOptions } from './getFlightOptions';
 
-interface FlightOption {
+export interface FlightOption {
   id: string;
   airline: string;
   price: number;
   duration: string;
 }
 
-export default function Exercise1() {
+function FlightBooking() {
   const [destination, setDestination] = useState('');
   const [departure, setDeparture] = useState('');
   const [arrival, setArrival] = useState('');
@@ -27,22 +28,14 @@ export default function Exercise1() {
     setIsError(false);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const flights = await getFlightOptions({
+        destination,
+        departure,
+        arrival,
+        passengers,
+      });
 
-      // Mock flight options
-      const mockFlights: FlightOption[] = [
-        { id: '1', airline: 'Sky Airways', price: 299, duration: '2h 30m' },
-        { id: '2', airline: 'Ocean Air', price: 349, duration: '2h 45m' },
-        {
-          id: '3',
-          airline: 'Mountain Express',
-          price: 279,
-          duration: '3h 15m',
-        },
-      ];
-
-      setFlightOptions(mockFlights);
+      setFlightOptions(flights);
     } catch (error) {
       setIsError(true);
     } finally {
@@ -138,7 +131,7 @@ export default function Exercise1() {
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold">${flight.price}</p>
-                    <Button className="mt-2 bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600">
+                    <Button className="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
                       Select
                     </Button>
                   </div>
@@ -150,4 +143,8 @@ export default function Exercise1() {
       )}
     </div>
   );
+}
+
+export default function Page() {
+  return <FlightBooking />;
 }

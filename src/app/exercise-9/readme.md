@@ -1,0 +1,4 @@
+- split destination into a separate component
+- normalize the state to have a single array of todos
+- bonus: implement undo and redo
+- bonus: use a 3rd party library to manage the state

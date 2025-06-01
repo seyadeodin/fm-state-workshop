@@ -3,23 +3,21 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { useEffect, useState } from 'react';
-import { getFlightOptions } from './getFlightOptions';
+import { useState } from 'react';
+import { getFlightOptions } from '../getFlightOptions';
+
+export interface FlightOption {
+  id: string;
+  airline: string;
+  price: number;
+  duration: string;
+}
 
 const enum FormState {
   IDLE = 'IDLE',
   SUBMITTING = 'SUBMITTING',
   ERROR = 'ERROR',
   SUCCESS = 'SUCCESS',
-  SELECTED = 'SELECTED',
-}
-
-interface FlightOption {
-  id: string;
-  airline: string;
-  price: number;
-  duration: string;
 }
 
 function FlightBooking() {
@@ -29,22 +27,10 @@ function FlightBooking() {
   const [passengers, setPassengers] = useState(1);
   const [formState, setFormState] = useState<FormState>(FormState.IDLE);
   const [flightOptions, setFlightOptions] = useState<FlightOption[]>([]);
-  const [isRoundtrip, setIsRoundtrip] = useState(false);
-  const [selectedFlight, setSelectedFlight] = useState<FlightOption | null>(
-    null
-  );
-  const [totalPrice, setTotalPrice] = useState(0);
-
-  useEffect(() => {
-    if (selectedFlight) {
-      setTotalPrice(selectedFlight.price * passengers);
-    }
-  }, [selectedFlight, passengers]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormState(FormState.SUBMITTING);
-    setSelectedFlight(null);
 
     try {
       const flights = await getFlightOptions({
@@ -56,14 +42,9 @@ function FlightBooking() {
 
       setFlightOptions(flights);
       setFormState(FormState.SUCCESS);
-    } catch {
+    } catch (error) {
       setFormState(FormState.ERROR);
     }
-  };
-
-  const handleFlightSelect = (flight: FlightOption) => {
-    setSelectedFlight(flight);
-    setFormState(FormState.SELECTED);
   };
 
   return (
@@ -71,15 +52,6 @@ function FlightBooking() {
       <h1 className="text-2xl font-bold mb-6">Flight Booking</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex items-center space-x-2 mb-4">
-          <Switch
-            id="roundtrip"
-            checked={isRoundtrip}
-            onCheckedChange={setIsRoundtrip}
-          />
-          <Label htmlFor="roundtrip">Roundtrip flight</Label>
-        </div>
-
         <div>
           <Label htmlFor="destination" className="block mb-1">
             Destination
@@ -102,24 +74,24 @@ function FlightBooking() {
             id="departure"
             value={departure}
             onChange={(e) => setDeparture(e.target.value)}
+            className="w-full p-2 border rounded"
             required
           />
         </div>
 
-        {isRoundtrip && (
-          <div>
-            <Label htmlFor="arrival" className="block mb-1">
-              Return Date
-            </Label>
-            <Input
-              type="date"
-              id="arrival"
-              value={arrival}
-              onChange={(e) => setArrival(e.target.value)}
-              required
-            />
-          </div>
-        )}
+        <div>
+          <Label htmlFor="arrival" className="block mb-1">
+            Arrival Date
+          </Label>
+          <Input
+            type="date"
+            id="arrival"
+            value={arrival}
+            onChange={(e) => setArrival(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
 
         <div>
           <Label htmlFor="passengers" className="block mb-1">
@@ -153,18 +125,14 @@ function FlightBooking() {
         </div>
       )}
 
-      {formState === FormState.SUCCESS && flightOptions.length > 0 && (
+      {flightOptions.length > 0 && (
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Available Flights</h2>
           <div className="space-y-4">
             {flightOptions.map((flight) => (
               <div
                 key={flight.id}
-                className={`p-4 border rounded hover:shadow-md ${
-                  selectedFlight?.id === flight.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : ''
-                }`}
+                className="p-4 border rounded hover:shadow-md"
               >
                 <div className="flex justify-between items-center">
                   <div>
@@ -173,28 +141,13 @@ function FlightBooking() {
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold">${flight.price}</p>
-                    <Button
-                      className="mt-2 bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600"
-                      onClick={() => handleFlightSelect(flight)}
-                    >
-                      {selectedFlight?.id === flight.id ? 'Selected' : 'Select'}
+                    <Button className="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
+                      Select
                     </Button>
                   </div>
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {formState === FormState.SELECTED && selectedFlight && (
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Booking Summary</h3>
-          <div className="space-y-2">
-            <p>Flight: {selectedFlight.airline}</p>
-            <p>Duration: {selectedFlight.duration}</p>
-            <p>Passengers: {passengers}</p>
-            <p className="text-xl font-bold mt-4">Total: ${totalPrice}</p>
           </div>
         </div>
       )}
