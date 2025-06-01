@@ -51,24 +51,6 @@ export const comments = sqliteTable('comments', {
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const bookings = sqliteTable('bookings', {
-  id: text('id').primaryKey(),
-  itineraryId: text('itinerary_id')
-    .notNull()
-    .references(() => itineraries.id, { onDelete: 'cascade' }),
-  destinationId: text('destination_id')
-    .notNull()
-    .references(() => destinations.id, { onDelete: 'cascade' }),
-  type: text({
-    enum: ['flight', 'hotel', 'car'],
-  }).notNull(),
-  referenceId: text('reference_id').notNull(), // External booking reference
-  status: text({
-    enum: ['pending', 'confirmed', 'cancelled'],
-  }).notNull(),
-  createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-});
-
 export const references = sqliteTable('references', {
   id: text('id').primaryKey(), // This will be the reference_id used in bookings
   type: text({
@@ -108,7 +90,6 @@ export const itinerariesRelations = relations(itineraries, ({ many }) => ({
   destinations: many(destinations),
   activities: many(activities),
   comments: many(comments),
-  bookings: many(bookings),
 }));
 
 export const destinationsRelations = relations(
@@ -119,7 +100,6 @@ export const destinationsRelations = relations(
       references: [itineraries.id],
     }),
     activities: many(activities),
-    bookings: many(bookings),
     flightBookings: many(flightBookings),
     hotelBookings: many(hotelBookings),
   })
