@@ -25,7 +25,7 @@ export async function selectHotel(
   });
 
   revalidatePath(
-    `/itinerary/${itineraryId}/destinations/${destinationId}/hotel`
+    `/itineraries/${itineraryId}/destinations/${destinationId}/hotel`
   );
-  redirect(`/itinerary/${itineraryId}/destinations/${destinationId}/review`);
+  redirect(`/itineraries/${itineraryId}/destinations/${destinationId}/review`);
 }

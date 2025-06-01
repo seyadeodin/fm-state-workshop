@@ -4,10 +4,8 @@ import { itineraries } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 // POST /api/v1/itineraries/[id]/share
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const id = params.id;
     const body = await request.json();

@@ -24,6 +24,6 @@ export async function createItinerary(formData: FormData) {
     people: parseInt(people),
   });
 
-  revalidatePath('/itinerary');
-  redirect(`/itinerary/${id}`);
+  revalidatePath('/itineraries');
+  redirect(`/itineraries/${id}`);
 }

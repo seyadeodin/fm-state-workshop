@@ -60,7 +60,7 @@ export default async function ReviewPage({
       {/* Breadcrumb */}
       <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
         <a
-          href={`/itinerary/${id}`}
+          href={`/itineraries/${id}`}
           className="hover:text-foreground transition-colors"
         >
           Your Trip

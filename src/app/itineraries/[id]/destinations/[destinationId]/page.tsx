@@ -4,28 +4,25 @@ import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  MapPin,
-  Calendar,
-  Settings,
-  Plane,
-  Hotel,
-  Car,
-  Star,
-} from 'lucide-react';
+import { MapPin, Calendar, Settings, Plane, Hotel } from 'lucide-react';
 
-export default async function DestinationPage({
-  params,
-}: {
-  params: { id: string; destinationId: string };
+export default async function DestinationPage(props: {
+  params: Promise<{ id: string; destinationId: string }>;
 }) {
+  const params = await props.params;
   const destination = await db.query.destinations.findFirst({
     where: eq(destinations.id, params.destinationId),
+    with: {
+      flightBookings: true,
+      hotelBookings: true,
+    },
   });
 
   if (!destination) {
     notFound();
   }
+
+  console.log(destination);
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">
@@ -107,18 +104,10 @@ export default async function DestinationPage({
           <CardContent className="space-y-3">
             <Button variant="outline" className="w-full justify-start" asChild>
               <a
-                href={`/itinerary/${params.id}/destinations/${params.destinationId}/flight`}
+                href={`/itineraries/${params.id}/destinations/${params.destinationId}/flight`}
               >
                 <Plane className="h-4 w-4" />
                 Book Flight
-              </a>
-            </Button>
-            <Button variant="outline" className="w-full justify-start" asChild>
-              <a
-                href={`/itinerary/${params.id}/destinations/${params.destinationId}/car`}
-              >
-                <Car className="h-4 w-4" />
-                Rent Car
               </a>
             </Button>
           </CardContent>
@@ -134,29 +123,10 @@ export default async function DestinationPage({
           <CardContent>
             <Button variant="outline" className="w-full justify-start" asChild>
               <a
-                href={`/itinerary/${params.id}/destinations/${params.destinationId}/hotel`}
+                href={`/itineraries/${params.id}/destinations/${params.destinationId}/hotel`}
               >
                 <Hotel className="h-4 w-4" />
                 Book Hotel
-              </a>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2 lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-primary" />
-              Reviews & Recommendations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" className="w-full justify-start" asChild>
-              <a
-                href={`/itinerary/${params.id}/destinations/${params.destinationId}/review`}
-              >
-                <Star className="h-4 w-4" />
-                View Reviews
               </a>
             </Button>
           </CardContent>

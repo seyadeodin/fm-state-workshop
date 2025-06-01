@@ -7,11 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Calendar, Users, Plus, Settings } from 'lucide-react';
 
-export default async function ItineraryPage({
-  params,
-}: {
-  params: { id: string };
+export default async function ItineraryPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const itinerary = await db.query.itineraries.findFirst({
     where: eq(itineraries.id, params.id),
   });
@@ -59,7 +58,7 @@ export default async function ItineraryPage({
               Destinations
             </CardTitle>
             <Button asChild size="sm">
-              <a href={`/itinerary/${params.id}/destinations/new`}>
+              <a href={`/itineraries/${params.id}/destinations/new`}>
                 <Plus className="h-4 w-4" />
                 Add Destination
               </a>
@@ -74,7 +73,7 @@ export default async function ItineraryPage({
                   Start planning your trip by adding your first destination
                 </p>
                 <Button asChild>
-                  <a href={`/itinerary/${params.id}/destinations/new`}>
+                  <a href={`/itineraries/${params.id}/destinations/new`}>
                     <Plus className="h-4 w-4" />
                     Add First Destination
                   </a>
@@ -115,7 +114,7 @@ export default async function ItineraryPage({
                     </div>
                     <Button variant="ghost" size="sm" asChild>
                       <a
-                        href={`/itinerary/${params.id}/destinations/${destination.id}`}
+                        href={`/itineraries/${params.id}/destinations/${destination.id}`}
                       >
                         View Details
                       </a>

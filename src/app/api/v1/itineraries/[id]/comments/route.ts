@@ -5,10 +5,8 @@ import { eq } from 'drizzle-orm';
 import { generateId } from '@/db';
 
 // GET /api/v1/itineraries/[id]/comments
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const id = params.id;
     const allComments = await db
@@ -27,10 +25,8 @@ export async function GET(
 }
 
 // POST /api/v1/itineraries/[id]/comments
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const id = params.id;
     const body = await request.json();

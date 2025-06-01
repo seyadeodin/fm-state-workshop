@@ -28,6 +28,6 @@ export async function createDestination(formData: FormData) {
     departureDate,
   });
 
-  revalidatePath('/itinerary');
-  redirect(`/itinerary/${itineraryId}/destinations/${id}/flight`);
+  revalidatePath('/itineraries');
+  redirect(`/itineraries/${itineraryId}/destinations/${id}/flight`);
 }

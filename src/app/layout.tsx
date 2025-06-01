@@ -1,6 +1,7 @@
 import { Noto_Sans } from 'next/font/google';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import './globals.css';
+import Link from 'next/link';
 
 const notoSans = Noto_Sans({
   weight: ['400', '500', '700', '900'],
@@ -52,42 +53,12 @@ export default function RootLayout({
               </div>
               <div className="flex flex-1 justify-end gap-8">
                 <div className="flex items-center gap-9">
-                  <a
+                  <Link
                     className="text-[#121416] dark:text-white text-sm font-medium leading-normal"
-                    href="#"
+                    href="/itinerary"
                   >
-                    Trips
-                  </a>
-                  <a
-                    className="text-[#121416] dark:text-white text-sm font-medium leading-normal"
-                    href="#"
-                  >
-                    Explore
-                  </a>
-                  <a
-                    className="text-[#121416] dark:text-white text-sm font-medium leading-normal"
-                    href="#"
-                  >
-                    Flights
-                  </a>
-                  <a
-                    className="text-[#121416] dark:text-white text-sm font-medium leading-normal"
-                    href="#"
-                  >
-                    Stays
-                  </a>
-                  <a
-                    className="text-[#121416] dark:text-white text-sm font-medium leading-normal"
-                    href="#"
-                  >
-                    Cars
-                  </a>
-                  <a
-                    className="text-[#121416] dark:text-white text-sm font-medium leading-normal"
-                    href="#"
-                  >
-                    Attractions
-                  </a>
+                    Itineraries
+                  </Link>
                 </div>
                 <button className="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 bg-[#f1f2f4] dark:bg-gray-700 text-[#121416] dark:text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
                   <div

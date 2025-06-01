@@ -97,7 +97,7 @@ export async function selectFlight(
   });
 
   revalidatePath(
-    `/itinerary/${itineraryId}/destinations/${destinationId}/flight`
+    `/itineraries/${itineraryId}/destinations/${destinationId}/flight`
   );
-  redirect(`/itinerary/${itineraryId}/destinations/${destinationId}/hotel`);
+  redirect(`/itineraries/${itineraryId}/destinations/${destinationId}/hotel`);
 }

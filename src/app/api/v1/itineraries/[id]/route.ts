@@ -4,10 +4,8 @@ import { itineraries } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 // GET /api/v1/itineraries/[id]
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const id = params.id;
     const itinerary = await db
@@ -34,10 +32,8 @@ export async function GET(
 }
 
 // PUT /api/v1/itineraries/[id]
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const id = params.id;
     const body = await request.json();
@@ -76,10 +72,8 @@ export async function PUT(
 }
 
 // DELETE /api/v1/itineraries/[id]
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const id = params.id;
     const deletedItinerary = await db

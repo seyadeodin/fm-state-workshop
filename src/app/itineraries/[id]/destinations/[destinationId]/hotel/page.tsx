@@ -4,11 +4,12 @@ import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { selectHotel } from './actions';
 
-export default async function HotelBookingPage({
-  params,
-}: {
-  params: { id: string; destinationId: string };
-}) {
+export default async function HotelBookingPage(
+  props: {
+    params: Promise<{ id: string; destinationId: string }>;
+  }
+) {
+  const params = await props.params;
   const destination = await db.query.destinations.findFirst({
     where: eq(destinations.id, params.destinationId),
   });

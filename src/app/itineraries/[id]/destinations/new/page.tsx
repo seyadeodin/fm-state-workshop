@@ -5,11 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Calendar } from 'lucide-react';
 
-export default function NewDestinationPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default async function NewDestinationPage(
+  props: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <div className="container mx-auto p-6 max-w-2xl">
       <Card>

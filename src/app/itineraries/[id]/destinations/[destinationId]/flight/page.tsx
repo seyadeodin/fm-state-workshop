@@ -10,11 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plane, Clock, DollarSign, Search } from 'lucide-react';
 
-export default async function FlightBookingPage({
-  params,
-}: {
-  params: { id: string; destinationId: string };
-}) {
+export default async function FlightBookingPage(
+  props: {
+    params: Promise<{ id: string; destinationId: string }>;
+  }
+) {
+  const params = await props.params;
   const destination = await db.query.destinations.findFirst({
     where: eq(destinations.id, params.destinationId),
   });

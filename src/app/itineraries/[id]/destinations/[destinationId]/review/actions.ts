@@ -15,6 +15,6 @@ export async function confirmBooking(
     .set({ status: 'pending' })
     .where(eq(destinations.id, destinationId));
 
-  revalidatePath(`/itinerary/${itineraryId}`);
-  redirect(`/itinerary/${itineraryId}`);
+  revalidatePath(`/itineraries/${itineraryId}`);
+  redirect(`/itineraries/${itineraryId}`);
 }
