@@ -11,9 +11,10 @@ import { FlightSkeleton } from './flight-skeleton';
 
 export default async function FlightBookingPage(props: {
   params: Promise<{ id: string; destinationId: string }>;
-  searchParams: { from?: string; to?: string; date?: string };
+  searchParams: Promise<{ from?: string; to?: string; date?: string }>;
 }) {
   const params = await props.params;
+  const searchParams = await props.searchParams;
   const destination = await db.query.destinations.findFirst({
     where: eq(destinations.id, params.destinationId),
   });
@@ -23,10 +24,12 @@ export default async function FlightBookingPage(props: {
   }
 
   const flights = await getFlights(
-    props.searchParams.from,
-    props.searchParams.to || destination.location,
-    props.searchParams.date || destination.arrivalDate
+    searchParams.from,
+    searchParams.to || destination.location,
+    searchParams.date || destination.arrivalDate
   );
+
+  console.log(flights);
 
   return (
     <div className="container mx-auto p-6 max-w-6xl">

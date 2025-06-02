@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Loader2 } from 'lucide-react';
 import { Combobox } from '@/components/combobox';
 import { locations } from '@/app/locations';
-import { useState } from 'react';
 import { useTransition } from 'react';
 
 interface FlightSearchFormProps {
@@ -23,11 +22,11 @@ export function FlightSearchForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [from, setFrom] = useState(searchParams.get('from') || '');
-  const [to, setTo] = useState(searchParams.get('to') || defaultTo);
 
   const handleSearch = (formData: FormData) => {
     const date = formData.get('departure') as string;
+    const from = formData.get('from') as string;
+    const to = formData.get('to') as string;
 
     const params = new URLSearchParams();
     if (from) params.set('from', from);
