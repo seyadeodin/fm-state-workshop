@@ -1,4 +1,8 @@
-## URL Query State Management
+# URL Query State Management
+
+## Core Concepts
+
+### URL State for Shareable Application State
 
 - **Rule**: Store shareable and persistent state in URL query parameters
 - **Anti-pattern**: Using `useState` for state that should be bookmarkable or shareable
@@ -22,10 +26,12 @@
 
 **When to use query params**: When the state affects what the user sees and should be shareable or persistent
 
-## The nuqs Library
+### Type-Safe Query State with nuqs
 
-- **Purpose**: Type-safe query string state management for Next.js
-- **Key features**:
+- **Rule**: Use specialized libraries for type-safe URL state management
+- **Anti-pattern**: Manual URL parsing and string manipulation
+- **Best practice**: Use nuqs for automatic URL synchronization with type safety
+- **Benefits**:
   - Automatic URL synchronization
   - Type-safe parsing and serialization
   - SSR-compatible
@@ -162,9 +168,9 @@ const [count, setCount] = useQueryState('count', {
 
 ---
 
-## Exercise
+## Exercise: Convert Form State to URL Query Parameters
 
-### Goal: Convert Form State to URL Query Parameters
+**Goal**: Transform local component state to persistent URL state
 
 You have a flight booking application that currently uses `useState` for form data. The problem is that users lose their search criteria when they refresh the page or want to share a specific search with someone.
 
@@ -198,36 +204,19 @@ Convert the booking form to use `useQueryState` from the `nuqs` library so that:
 
    - String fields can use default behavior
    - Number fields need parse/serialize functions
-   - Boolean fields need true/false parsing
-   - Provide sensible default values
+   - Boolean fields need proper conversion
+   - Date fields need validation
 
-3. **Handle edge cases**:
-
-   - Invalid numbers should fallback to defaults
-   - Missing boolean values should default to false
-   - Ensure SSR compatibility with defaults
-
-4. **Test the functionality**:
-   - Fill out the form and verify URL updates
-   - Refresh the page and confirm form state persists
-   - Use browser back/forward to navigate
-   - Copy URL and open in new tab to verify shareability
+3. **Test the implementation**:
+   - Fill out the form and copy the URL
+   - Refresh the page - form should retain values
+   - Share the URL with someone else
+   - Use browser back/forward buttons
 
 ### Success Criteria:
 
-After implementing URL query state:
-
-- ✅ Form data persists across page refreshes
-- ✅ URLs are shareable and bookmarkable
-- ✅ Browser navigation works with form state
-- ✅ No hydration mismatches in SSR
-- ✅ Form maintains the same UX and functionality
-- ✅ Invalid query parameters gracefully fallback to defaults
-
-### Bonus Challenges:
-
-1. **Search Results State**: Also move search filters (direct flights toggle, sort options) to query parameters
-2. **Selected Flight State**: Store the selected flight ID in the URL
-3. **Deep Linking**: Allow direct links to specific search results with pre-applied filters
-
-The end result should be a flight booking form where every aspect of the user's search and selection process is preserved in the URL, making it a truly shareable and bookmarkable experience.
+- All form state persists in URL query parameters
+- URLs are shareable and bookmarkable
+- Browser navigation works correctly
+- No hydration mismatches in SSR
+- Type safety is maintained throughout

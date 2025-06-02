@@ -1,17 +1,21 @@
-# Syncing with external stores
+# Syncing with External Stores
+
+## Core Concepts
+
+### useSyncExternalStore for External Data Sources
+
+- **Rule**: Use `useSyncExternalStore` for subscribing to external stores and data sources
+- **Anti-pattern**: Using `useEffect` + `useState` for external data synchronization
+- **Best practice**: Use `useSyncExternalStore` for atomic updates and hydration safety
+- **Benefits**:
+  - Eliminates the useEffect + useState dance for external data
+  - Handles hydration mismatches between server and client
+  - Optimizes performance with built-in subscription management
+  - Provides consistency across server-side rendering and client-side hydration
 
 `useSyncExternalStore` is a React hook that lets you subscribe to external stores (data sources outside React's state management system). It can replace the common `useEffect` + `useState` pattern when syncing with external data sources.
 
-**Key benefits:**
-
-- **Eliminates the useEffect + useState dance** for external data
-- **Handles hydration mismatches** between server and client
-- **Optimizes performance** with built-in subscription management
-- **Provides consistency** across server-side rendering and client-side hydration
-
-## The Problem: useEffect + useState Anti-pattern
-
-Before `useSyncExternalStore`, we often used this pattern:
+**Before (Anti-pattern):**
 
 ```tsx
 // ❌ Anti-pattern: useEffect + useState for external data
@@ -36,11 +40,12 @@ function FlightDashboard() {
 
 **Problems with this approach:**
 
+- **Race conditions**: Initial data and subscription updates can get out of sync
 - **Hydration mismatches**: Server and client might show different data
 - **Performance**: Extra re-renders during initial setup
 - **Complexity**: Manual subscription management and cleanup
 
-## The Solution: useSyncExternalStore
+**After (Best practice):**
 
 ```tsx
 // ✅ Best practice: useSyncExternalStore
@@ -62,7 +67,7 @@ function FlightDashboard() {
 - **Automatic cleanup**: No manual subscription management needed
 - **Performance optimized**: Minimal re-renders and efficient updates
 
-## When to Use `useSyncExternalStore`
+## When to Use useSyncExternalStore
 
 **Perfect for:**
 
@@ -92,24 +97,40 @@ const isOnline = useSyncExternalStore(
 
 This prevents hydration mismatches where the server renders one thing and the client shows another.
 
-## Exercise Goals
+---
 
-In this exercise, you'll:
+## Exercise: Sync with External Flight Store
+
+**Goal**: Replace `useEffect` + `useState` with `useSyncExternalStore` for external data
+
+You have a flight dashboard that currently uses the manual `useEffect` + `useState` pattern to sync with an external flight store. This approach has timing issues and doesn't handle hydration properly.
+
+### Your Task:
 
 1. **Refactor from useEffect + useState** to `useSyncExternalStore` in `page.tsx`
 2. **Connect to the FlightStore** using the proper subscription pattern
 3. **Handle real-time updates** as the flight data changes every 5 seconds
 4. **Bonus**: Derive additional metrics like average delay and total delayed flights
 
+### Setup:
+
 The `FlightStore` is already set up with:
 
 - `subscribe(callback)` - Subscribe to changes
 - `getSnapshot()` - Get current flight data
-- Automatic updates every second with realistic flight status changes
+- Automatic updates every 5 seconds with realistic flight status changes
 
-**Key learning points:**
+### Key Learning Points:
 
 - How `useSyncExternalStore` eliminates common async state bugs
 - Why it's superior to `useEffect` + `useState` for external data
 - How to build reusable custom hooks with external stores
 - Understanding the three parameters: subscribe, getSnapshot, and getServerSnapshot
+
+### Success Criteria:
+
+- No more manual `useEffect` + `useState` patterns for external data
+- Flight data updates automatically when store changes
+- No hydration mismatches between server and client
+- Performance is optimized with minimal re-renders
+- Code is cleaner and more maintainable

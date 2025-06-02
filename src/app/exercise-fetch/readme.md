@@ -1,4 +1,8 @@
-## Data Fetching with TanStack Query
+# Server State Management with TanStack Query
+
+## Core Concepts
+
+### Specialized Libraries for Server State
 
 - **Rule**: Use specialized libraries for server state management
 - **Anti-pattern**: Using `useEffect` + `useState` for data fetching
@@ -142,6 +146,8 @@ const bookingMutation = useMutation({
 
 **Goal**: Replace `useEffect` + `useState` data fetching with TanStack Query
 
+You have a flight booking application that uses manual data fetching with `useEffect` and `useState`. This approach has several problems including race conditions, no caching, and complex error handling.
+
 ### Setup
 
 1. Install TanStack Query: `npm install @tanstack/react-query`
@@ -198,31 +204,25 @@ const bookingMutation = useMutation({
 // Before: Each object reference creates new cache entry
 queryKey: ['flights', flightSearch];
 
-// After: Normalized values ensure cache hits
+// After: Normalize the key structure
 queryKey: [
   'flights',
   {
     destination: flightSearch.destination,
     departure: flightSearch.departure,
-    arrival: flightSearch.arrival,
-    passengers: flightSearch.passengers,
-    isOneWay: flightSearch.isOneWay,
+    // ... other relevant fields
   },
 ];
 ```
 
-### Success Criteria
+### Success Criteria:
 
-After completing the exercise:
-
-- ✅ No manual `useState` for loading, error, or data states
-- ✅ No `useEffect` hooks for data fetching
-- ✅ Automatic caching prevents unnecessary refetches
-- ✅ Better error handling and retry logic
-- ✅ Improved user experience with background updates
-- ✅ Less boilerplate code overall
-- ✅ No memory leaks or race conditions
-- ✅ Query keys properly identify unique data requests
+- All data fetching uses TanStack Query
+- Loading and error states are handled automatically
+- Caching works correctly with proper query keys
+- DevTools show query information
+- No more race conditions or memory leaks
+- Better user experience with background refetching
 
 ### Bonus Challenges
 

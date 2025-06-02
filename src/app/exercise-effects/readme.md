@@ -1,4 +1,20 @@
-# Cascading Effects
+# Avoiding Cascading Effects
+
+## Core Concepts
+
+### Event-Driven vs Reactive State Management
+
+- **Rule**: Think about _why_ data changes (events), not _when_ data changes (reactive)
+- **Anti-pattern**: Using multiple `useEffect` hooks that cascade and trigger each other
+- **Best practice**: Use events to represent user actions and business logic, with single effect for side effects
+- **Benefits**:
+  - Predictable state flow and easier debugging
+  - No race conditions or timing issues
+  - Single source of truth for state transitions
+  - Better performance with fewer re-renders
+  - Clearer separation of concerns
+
+**Problems with cascading effects**:
 
 When building complex user interfaces, it's common to have multiple pieces of state that depend on each other. A naive approach might be to use multiple `useEffect` hooks that trigger in sequence, creating a "cascade" of effects. However, this pattern leads to several serious problems:
 
@@ -52,11 +68,7 @@ The logic flow jumps between different effects, making it hard to understand the
 - Multiple effects can cause cascading re-renders
 - Performance suffers as the component updates multiple times
 
-## The Solution: Event-Driven State Management
-
-Instead of thinking about _when_ data changes (reactive), think about _why_ data changes (events). This shift in mindset leads to more predictable and maintainable code.
-
-### Understanding the "Why" Behind Data Changes
+### Understanding Events vs Reactions
 
 Ask yourself: **What user action or business event caused this state change?**
 
@@ -65,7 +77,30 @@ Ask yourself: **What user action or business event caused this state change?**
 - Hotel search completes → `hotelSelected` event
 - API call fails → `searchFailed` event
 
+Instead of thinking about _when_ data changes (reactive), think about _why_ data changes (events). This shift in mindset
+leads to more predictable and maintainable code.
+
 ### Refactoring to useReducer + Single useEffect
+
+**Before (Cascading Effects Anti-pattern):**
+
+```tsx
+// Multiple effects that cascade
+useEffect(() => {
+  /* Effect 1 */
+}, [deps1]);
+useEffect(() => {
+  /* Effect 2 */
+}, [deps2]);
+useEffect(() => {
+  /* Effect 3 */
+}, [deps3]);
+useEffect(() => {
+  /* Effect 4 */
+}, [deps4]);
+```
+
+**After (Event-Driven Best Practice):**
 
 ```tsx
 type Action =
@@ -106,7 +141,7 @@ useEffect(() => {
 }, [state]);
 ```
 
-### Benefits of This Approach
+### Benefits of Event-Driven Approach
 
 1. **Single Source of Truth**: All state lives in the reducer
 2. **Predictable State Transitions**: Each action explicitly defines what changes
@@ -114,7 +149,11 @@ useEffect(() => {
 4. **Better Debugging**: Clear action history in React DevTools
 5. **No Race Conditions**: State changes are synchronous within the reducer
 
-## The Exercise
+---
+
+## Exercise: Refactor Cascading Effects
+
+**Goal**: Convert a component with cascading effects to event-driven state management
 
 In `page.tsx`, you'll find a trip booking component that demonstrates the cascading effects anti-pattern. The component:
 
@@ -132,7 +171,7 @@ Study the current implementation and identify:
 - How the logic flow jumps between different effects
 - Where race conditions might occur
 
-Then examine the solution in `solution/page.tsx` to see how the same functionality is implemented with:
+Then refactor the component to use:
 
 - A single `useReducer` managing all state
 - One `useEffect` handling async operations
@@ -146,4 +185,11 @@ Then examine the solution in `solution/page.tsx` to see how the same functionali
 3. **Business logic belongs in reducers**: Keep effects simple and focused
 4. **Think in events, not reactions**: Model user interactions and business events
 
-Run the exercise and compare the behavior - both versions work identically, but the refactored version is much more maintainable and debuggable.
+### Success Criteria:
+
+- Replace multiple `useEffect` hooks with a single one
+- All state managed by `useReducer` with clear actions
+- Business logic extracted from effects into reducer
+- State transitions are explicit and predictable
+- Component behavior remains identical but is more maintainable
+- No race conditions or timing issues
