@@ -1,50 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend Masters State Workshop
+
+In this workshop, we'll build and evolve a production-ready React application with scalable state management patterns. We'll start with the basics and progressively tackle more complex state challenges by implementing event-driven architecture, handling multiple sources of truth, and optimizing performance.
+
+## Workshop Overview
+
+You'll learn state management principles that can be applied to any application, regardless of framework, size, or complexity. This workshop combines theory with hands-on practice through a series of progressive exercises.
+
+### Key Takeaways
+
+By participating in this workshop, you'll learn to:
+
+- **Architect state management solutions** that scale with application complexity
+- **Avoid common React state management pitfalls** and anti-patterns
+- **Model state using event-driven patterns** for more predictable applications
+- **Balance local, shared, and server state** for optimal performance
+- **Debug and troubleshoot complex state issues** efficiently
 
 ## Getting Started
 
-First, run the development server:
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# or npm install or yarn install
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# or npm run dev or yarn dev
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the workshop application.
 
-## Learn More
+### Testing
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# or npm test or yarn test
+pnpm test
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Workshop Schedule & Exercises
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Exercise: Antipatterns](http://localhost:3000/exercise-antipatterns) - Common state management mistakes
+- [Exercise: Reducer](http://localhost:3000/exercise-reducer) - Building with useReducer
+- [Exercise: Diagrams](http://localhost:3000/exercise-diagrams) - State visualization techniques
+- [Exercise: Finite](http://localhost:3000/exercise-finite) - Finite state machines
+- [Exercise: Effects](http://localhost:3000/exercise-effects) - Managing side effects
+- [Exercise: Sync](http://localhost:3000/exercise-sync) - Synchronization patterns
+- [Exercise: Form](http://localhost:3000/exercise-form) - Event-driven form handling
+- [Exercise: Combine](http://localhost:3000/exercise-combine) - Combining state patterns
+- [Exercise: Fetch](http://localhost:3000/exercise-fetch) - Data fetching patterns
+- [Exercise: URL](http://localhost:3000/exercise-url) - URL state synchronization
+- [Exercise: Test](http://localhost:3000/exercise-test) - Testing state management
+- [Exercise: Normalization](http://localhost:3000/exercise-normalization) - Data normalization
+- [Exercise: Libraries](http://localhost:3000/exercise-libraries) - State management libraries
 
-## Deploy on Vercel
+## Technologies Used
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Framework**: Next.js 15 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: React hooks, XState Store, TanStack Query
+- **Database**: SQLite with Drizzle ORM
+- **Testing**: Vitest with Testing Library
+- **UI Components**: ShadCN (Radix UI primitives)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Additional Resources
 
-## Other projects
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://react.dev)
+- [XState Store Documentation](https://stately.ai/docs/xstate-store)
+- [TanStack Query Documentation](https://tanstack.com/query)
 
-- https://github.com/onlook-dev/onlook.git
-- https://github.com/midday-ai/midday
-- https://github.com/twentyhq/twenty
-- https://github.com/lmnr-ai/lmnr
-  Inbox Zero: https://github.com/elie222/inbox-zero
-  Dub: https://github.com/dubinc/dub
-  Cal: https://github.com/calcom/cal.com
-  Papermark: https://github.com/mfts/papermark
-  Midday: https://github.com/midday-ai/midday
-  OpenStatus: https://github.com/openstatusHQ/openstatus
-- https://github.com/calcom/cal.com
+Happy coding! 🚀
