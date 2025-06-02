@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useQueryState } from 'nuqs';
 
 interface Layover {
   city: string;
@@ -68,9 +69,18 @@ function SearchResults({
   const [selectedFlight, setSelectedFlight] = useState<FlightOption | null>(
     null
   );
-  const [showDirectOnly, setShowDirectOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<'price' | 'duration'>('price');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showDirectOnly, setShowDirectOnly] = useQueryState('directOnly', {
+    parse: (value) => value === 'true',
+    serialize: (value) => value.toString(),
+  });
+  const [sortBy, setSortBy] = useQueryState('sortBy', {
+    parse: (value) => (value === 'duration' ? 'duration' : 'price'),
+    serialize: (value) => value,
+  });
+  const [sortOrder, setSortOrder] = useQueryState('sortOrder', {
+    parse: (value) => (value === 'desc' ? 'desc' : 'asc'),
+    serialize: (value) => value,
+  });
   const totalPrice = selectedFlight ? selectedFlight.price * passengers : 0;
 
   const filteredFlights = flightOptions
@@ -113,7 +123,7 @@ function SearchResults({
         <div className="flex items-center space-x-2">
           <Switch
             id="direct-only"
-            checked={showDirectOnly}
+            checked={showDirectOnly || false}
             onCheckedChange={(checked) => setShowDirectOnly(checked)}
           />
           <Label htmlFor="direct-only">Direct flights only</Label>
@@ -198,18 +208,21 @@ function SearchResults({
 function BookingForm({
   onSubmit,
   isSubmitting,
-  passengers,
-  setPassengers,
 }: {
   onSubmit: () => void;
   isSubmitting: boolean;
-  passengers: number;
-  setPassengers: (value: number) => void;
 }) {
-  const [destination, setDestination] = useState('');
-  const [departure, setDeparture] = useState('');
-  const [arrival, setArrival] = useState('');
-  const [isOneWay, setIsOneWay] = useState(false);
+  const [destination, setDestination] = useQueryState('destination');
+  const [departure, setDeparture] = useQueryState('departure');
+  const [arrival, setArrival] = useQueryState('arrival');
+  const [passengers, setPassengers] = useQueryState('passengers', {
+    parse: (value) => parseInt(value) || 1,
+    serialize: (value) => value.toString(),
+  });
+  const [isOneWay, setIsOneWay] = useQueryState('isOneWay', {
+    parse: (value) => value === 'true',
+    serialize: (value) => value.toString(),
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,7 +234,7 @@ function BookingForm({
       <div className="flex items-center space-x-2 mb-4">
         <Switch
           id="one-way"
-          checked={isOneWay}
+          checked={isOneWay || false}
           onCheckedChange={(checked) => setIsOneWay(checked)}
         />
         <Label htmlFor="one-way">One-way flight</Label>
@@ -234,7 +247,7 @@ function BookingForm({
         <Input
           type="text"
           id="destination"
-          value={destination}
+          value={destination || ''}
           onChange={(e) => setDestination(e.target.value)}
           required
         />
@@ -247,7 +260,7 @@ function BookingForm({
         <Input
           type="date"
           id="departure"
-          value={departure}
+          value={departure || ''}
           onChange={(e) => setDeparture(e.target.value)}
           required
         />
@@ -261,7 +274,7 @@ function BookingForm({
           <Input
             type="date"
             id="arrival"
-            value={arrival}
+            value={arrival || ''}
             onChange={(e) => setArrival(e.target.value)}
             required
           />
@@ -275,7 +288,7 @@ function BookingForm({
         <Input
           type="number"
           id="passengers"
-          value={passengers}
+          value={passengers || 1}
           onChange={(e) => setPassengers(parseInt(e.target.value))}
           min="1"
           max="9"
@@ -294,8 +307,77 @@ export default function Page() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isError, setIsError] = useState(false);
   const [flightOptions, setFlightOptions] = useState<FlightOption[]>([]);
-  const [view, setView] = useState<'search' | 'results'>('search');
-  const [passengers, setPassengers] = useState(1);
+  const [view, setView] = useQueryState('view', {
+    parse: (value) => (value === 'results' ? 'results' : 'search'),
+    serialize: (value) => value,
+    defaultValue: 'search',
+  });
+
+  // Get the search parameters from nuqs hooks
+  const [destination] = useQueryState('destination');
+  const [departure] = useQueryState('departure');
+  const [passengers] = useQueryState('passengers', {
+    parse: (value) => parseInt(value) || 1,
+    serialize: (value) => value.toString(),
+  });
+
+  // Add effect to load search results when URL has search params
+  useEffect(() => {
+    const loadSearchResults = async () => {
+      const hasSearchParams = destination && departure;
+
+      if (hasSearchParams && view === 'results') {
+        setIsSubmitting(true);
+        try {
+          // Simulate API call
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+
+          // Mock flight options with layovers
+          const mockFlights: FlightOption[] = [
+            {
+              id: '1',
+              airline: 'Sky Airways',
+              price: 299,
+              duration: '2h 30m',
+              layovers: [],
+            },
+            {
+              id: '2',
+              airline: 'Ocean Air',
+              price: 349,
+              duration: '2h 45m',
+              layovers: [
+                { city: 'Chicago', duration: '1h 15m' },
+                { city: 'Denver', duration: '45m' },
+              ],
+            },
+            {
+              id: '3',
+              airline: 'Mountain Express',
+              price: 279,
+              duration: '3h 15m',
+              layovers: [{ city: 'Phoenix', duration: '1h 30m' }],
+            },
+            {
+              id: '4',
+              airline: 'Pacific Airlines',
+              price: 329,
+              duration: '2h 15m',
+              layovers: [],
+            },
+          ];
+
+          setFlightOptions(mockFlights);
+        } catch {
+          setIsError(true);
+        } finally {
+          setIsSubmitting(false);
+        }
+      }
+    };
+
+    loadSearchResults();
+  }, [view, destination, departure]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
@@ -355,12 +437,7 @@ export default function Page() {
 
       {view === 'search' ? (
         <>
-          <BookingForm
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-            passengers={passengers}
-            setPassengers={setPassengers}
-          />
+          <BookingForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
           {isError && (
             <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
               An error occurred while searching for flights. Please try again.
@@ -370,7 +447,7 @@ export default function Page() {
       ) : (
         <SearchResults
           flightOptions={flightOptions}
-          passengers={passengers}
+          passengers={passengers ?? 1}
           onBack={() => setView('search')}
           isLoading={isSubmitting}
         />
