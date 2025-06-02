@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-import { getFlightOptions } from '@/app/exerciseUtils';
+import { getFlightOptions } from './getFlightOptions';
 
 export interface FlightOption {
   id: string;
