@@ -1,4 +1,4 @@
-# Testing State & Business Logic
+# Testing App Logic
 
 ## Why explicit state modeling makes testing easier
 
@@ -95,8 +95,8 @@ When using state machines, test all possible transitions:
 
 - **Valid transitions**: Can you move from search → results → selection?
 - **Invalid transitions**: Can you book without selecting a flight?
-- **Guards**: Are conditional transitions working correctly?
-- **Context updates**: Does state data update properly during transitions?
+- **Conditional transitions**: Are conditional transitions working correctly?
+- **Contextual data updates**: Does state data update properly during transitions?
 
 ## Testing patterns for booking flow
 

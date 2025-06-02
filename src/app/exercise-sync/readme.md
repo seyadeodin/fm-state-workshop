@@ -1,8 +1,6 @@
-# useSyncExternalStore
+# Syncing with external stores
 
-## What is useSyncExternalStore?
-
-`useSyncExternalStore` is a React hook that lets you subscribe to external stores (data sources outside React's state management system). It's designed to replace the common `useEffect` + `useState` pattern when syncing with external data sources.
+`useSyncExternalStore` is a React hook that lets you subscribe to external stores (data sources outside React's state management system). It can replace the common `useEffect` + `useState` pattern when syncing with external data sources.
 
 **Key benefits:**
 
@@ -38,7 +36,6 @@ function FlightDashboard() {
 
 **Problems with this approach:**
 
-- **Race conditions**: Initial data and subscription updates can get out of sync
 - **Hydration mismatches**: Server and client might show different data
 - **Performance**: Extra re-renders during initial setup
 - **Complexity**: Manual subscription management and cleanup
@@ -65,7 +62,7 @@ function FlightDashboard() {
 - **Automatic cleanup**: No manual subscription management needed
 - **Performance optimized**: Minimal re-renders and efficient updates
 
-## When to Use useSyncExternalStore
+## When to Use `useSyncExternalStore`
 
 **Perfect for:**
 
@@ -108,7 +105,7 @@ The `FlightStore` is already set up with:
 
 - `subscribe(callback)` - Subscribe to changes
 - `getSnapshot()` - Get current flight data
-- Automatic updates every 5 seconds with realistic flight status changes
+- Automatic updates every second with realistic flight status changes
 
 **Key learning points:**
 

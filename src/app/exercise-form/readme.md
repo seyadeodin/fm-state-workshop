@@ -25,7 +25,7 @@ This becomes unwieldy with larger forms and requires careful state synchronizati
 
 ## FormData: A Web Standard Approach
 
-FormData is a built-in web API that automatically captures form values:
+`FormData` is a built-in web API that automatically captures form values:
 
 ```jsx
 function handleSubmit(formData) {
@@ -40,7 +40,6 @@ function handleSubmit(formData) {
 - **Automatic data collection** - No manual state management
 - **Web standard** - Works everywhere, not just React
 - **File upload support** - Handles files naturally
-- **Progressive enhancement** - Works without JavaScript
 - **Less boilerplate** - No individual change handlers needed
 
 ## Server Actions in Next.js
@@ -170,25 +169,25 @@ const [state, submitAction] = useActionState(createUser, initialState);
 
 This creates a robust validation pipeline that ensures data integrity from form submission to database storage.
 
-## When to Use FormData vs useState
+## When to Use `FormData` vs `useState`
 
-### Use FormData when:
+### Use `FormData` when:
 
-- ✅ Building traditional forms with submit buttons
-- ✅ Working with server actions/mutations
-- ✅ Need progressive enhancement
-- ✅ Forms have many fields
-- ✅ File uploads are involved
-- ✅ Working with Next.js app router
+- Building traditional forms with submit buttons
+- Working with server actions/mutations
+- Need progressive enhancement
+- Forms have many fields
+- File uploads are involved
+- Working with Next.js app router
 
-### Use useState when:
+### Use `useState` when:
 
-- ✅ Building real-time/interactive UIs
-- ✅ Need immediate validation on every keystroke
-- ✅ Complex client-side logic between fields
-- ✅ Building search/filter interfaces
-- ✅ Need granular control over individual field updates
-- ✅ Working with controlled components that need precise state
+- Building real-time/interactive UIs
+- Need immediate validation on every keystroke
+- Complex client-side logic between fields
+- Building search/filter interfaces
+- Need granular control over individual field updates
+- Working with controlled components that need precise state
 
 ## The Exercise
 
@@ -212,8 +211,5 @@ Your task is to convert a form that uses multiple `useState` and `useEffect` cal
 
 1. **FormData is not a replacement for all state** - It's specifically great for forms
 2. **Server actions simplify data mutations** - No need for separate API routes
-3. **Progressive enhancement matters** - Forms work without JavaScript
-4. **Choose the right tool** - useState for interactive UIs, FormData for traditional forms
-5. **You don't have to convert everything** - Mix and match approaches as needed
-
-This pattern is becoming increasingly popular in modern React applications, especially with frameworks like Next.js, Remix, and others that support server actions.
+3. **Choose the right tool** - `useState` for interactive UIs, `FormData` for traditional forms
+4. **You don't have to convert everything** - Mix and match approaches as needed

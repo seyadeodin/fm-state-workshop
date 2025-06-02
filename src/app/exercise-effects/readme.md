@@ -1,10 +1,8 @@
-# Exercise 10: Taming Cascading Effects
-
-## The Problem with Cascading useEffects
+# Cascading Effects
 
 When building complex user interfaces, it's common to have multiple pieces of state that depend on each other. A naive approach might be to use multiple `useEffect` hooks that trigger in sequence, creating a "cascade" of effects. However, this pattern leads to several serious problems:
 
-### 1. **Difficult to Follow Logic Flow**
+**Difficult to Follow Logic Flow**
 
 ```tsx
 // Effect 1: Trigger search when inputs change
@@ -36,19 +34,19 @@ useEffect(() => {
 
 The logic flow jumps between different effects, making it hard to understand the complete user journey.
 
-### 2. **Race Conditions and Timing Issues**
+**Race Conditions and Timing Issues**
 
 - Effects might run in unexpected orders
 - State updates are asynchronous, leading to stale closures
 - Multiple effects might trigger simultaneously, causing conflicts
 
-### 3. **Debugging Nightmares**
+**Debugging Nightmares**
 
 - Hard to trace which effect caused a particular state change
 - React DevTools shows effects firing in seemingly random order
 - Difficult to reproduce bugs consistently
 
-### 4. **Unnecessary Re-renders**
+**Unnecessary Re-renders**
 
 - Each state change triggers component re-renders
 - Multiple effects can cause cascading re-renders

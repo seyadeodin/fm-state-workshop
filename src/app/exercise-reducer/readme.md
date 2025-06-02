@@ -1,4 +1,4 @@
-# Exercise 3: State Management with Context and Finite State Machines
+# State Management with Context and Finite State Machines
 
 In this exercise, you'll refactor a flight booking application to use React Context for state management and implement a finite state machine pattern. This will help you understand how to manage complex state in a more predictable and maintainable way.
 

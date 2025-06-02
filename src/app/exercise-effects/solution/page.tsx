@@ -33,11 +33,10 @@ type BookingState = {
 };
 
 type Action =
-  | { type: 'SET_INPUT'; inputs: Partial<BookingState['inputs']> }
+  | { type: 'inputUpdated'; inputs: Partial<BookingState['inputs']> }
   | { type: 'flightUpdated'; flight: Flight }
   | { type: 'hotelUpdated'; hotel: Hotel }
-  | { type: 'SET_ERROR'; error: string }
-  | { type: 'RESET' };
+  | { type: 'error'; error: string };
 
 const initialState: BookingState = {
   inputs: {
@@ -53,7 +52,7 @@ const initialState: BookingState = {
 
 function reducer(state: BookingState, action: Action): BookingState {
   switch (action.type) {
-    case 'SET_INPUT':
+    case 'inputUpdated':
       const inputs = {
         ...state.inputs,
         ...action.inputs,
@@ -78,14 +77,12 @@ function reducer(state: BookingState, action: Action): BookingState {
         status: 'idle',
         selectedHotel: action.hotel,
       };
-    case 'SET_ERROR':
+    case 'error':
       return {
         ...state,
         status: 'error',
         error: action.error,
       };
-    case 'RESET':
-      return initialState;
     default:
       return state;
   }
@@ -133,7 +130,7 @@ export default function TripSearch() {
 
           dispatch({ type: 'flightUpdated', flight: bestFlight });
         } catch {
-          dispatch({ type: 'SET_ERROR', error: 'Failed to search flights' });
+          dispatch({ type: 'error', error: 'Failed to search flights' });
         }
       };
 
@@ -170,7 +167,7 @@ export default function TripSearch() {
 
           dispatch({ type: 'hotelUpdated', hotel: bestHotel });
         } catch {
-          dispatch({ type: 'SET_ERROR', error: 'Failed to search hotels' });
+          dispatch({ type: 'error', error: 'Failed to search hotels' });
         }
       };
 
@@ -191,7 +188,7 @@ export default function TripSearch() {
               id="destination"
               onBlur={(e) =>
                 dispatch({
-                  type: 'SET_INPUT',
+                  type: 'inputUpdated',
                   inputs: {
                     destination: e.target.value.trim(),
                   },
@@ -209,7 +206,7 @@ export default function TripSearch() {
               value={state.inputs.startDate}
               onChange={(e) =>
                 dispatch({
-                  type: 'SET_INPUT',
+                  type: 'inputUpdated',
                   inputs: {
                     startDate: e.target.value,
                   },
@@ -226,7 +223,7 @@ export default function TripSearch() {
               value={state.inputs.endDate}
               onChange={(e) =>
                 dispatch({
-                  type: 'SET_INPUT',
+                  type: 'inputUpdated',
                   inputs: {
                     endDate: e.target.value,
                   },

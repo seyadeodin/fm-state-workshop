@@ -1,18 +1,18 @@
 ## Deriving state
 
-- **Rule**: If you can calculate it, don't store it
+- If you can calculate (derive) it, don't store it
 - **Anti-pattern**: Using `useState` + `useEffect` to sync derived data
 - **Best practice**: Calculate derived values directly in render or with `useMemo`
-- **Benefits**:
+- Why?
   - Eliminates synchronization bugs
   - Reduces state complexity
   - Automatically stays in sync with source data
-    - **Examples of derived state**:
+- Examples of derived state:
   - Filtered/sorted lists from original data + criteria
   - Computed totals from item arrays
   - Status calculations from multiple boolean flags
   - Available items from excluded items + full list
-    - **When to use `useMemo`**: Only when the calculation is expensive and dependencies change infrequently
+- When to `useMemo`: Only when the calculation is expensive and dependencies change infrequently
 
 **Before (Anti-pattern):**
 
@@ -50,19 +50,19 @@ function TripSummary() {
 
 ## Refs
 
-- **Rule**: Use `useRef` for values that don't affect rendering
+- Use `useRef` for values that don't affect rendering
 - **Anti-pattern**: Using `useState` for mutable values that don't need re-renders
 - **Best practice**: `useRef` for DOM references, timers, counters, previous values
 - **Key differences**:
   - `useState`: Triggers re-render when changed
   - `useRef`: No re-render when `.current` changes
-    - **Common use cases**:
-  - Timer IDs (setInterval/setTimeout)
+- **Common use cases**:
+  - Timer IDs (`setInterval`/`setTimeout`)
   - Scroll position tracking
   - Analytics/tracking data
   - Caching expensive calculations
   - Storing previous prop values
-    - **Memory**: Changing `ref.current` doesn't cause component re-render
+- Changing `ref.current` doesn't cause component re-render
 
 **Before (Anti-pattern):**
 
@@ -110,7 +110,7 @@ function Timer() {
 
 ## Redundant state
 
-- **Rule**: Single source of truth for each piece of data
+- Single source of truth for each piece of data
 - **Anti-pattern**: Storing the same data in multiple places
 - **Best practice**: Store minimal state, derive everything else
 - **Common redundancy patterns**:
@@ -118,12 +118,12 @@ function Timer() {
   - Duplicating data already available in props/context
   - Storing both raw and formatted versions of same data
   - Keeping derived calculations in separate state
-    - **Problems with redundant state**:
+- **Problems with redundant state**:
   - Synchronization bugs when data gets out of sync
   - More complex update logic
   - Increased memory usage
   - Harder to debug and maintain
-    - **Solutions**:
+- **Solutions**:
   - Store only IDs, look up full objects when needed
   - Use props/context data directly
   - Format data during render, not in state
@@ -187,45 +187,17 @@ function HotelSelection() {
 
 ## Exercises
 
-### Part 1: Fix Derived State Anti-patterns
+1. Fix Derived State Anti-patterns
 
-**Goal**: Remove unnecessary state and effects by deriving values instead
+   **Goal**: Remove unnecessary state and effects by deriving values instead
 
-**Steps for each component**:
+2. Convert useState to useRef
 
-- Remove the unnecessary state variable
-- Remove the `useEffect` that was syncing the state
-- Calculate the value directly in the render method
-- Use `useMemo` only if the calculation is expensive
+   **Goal**: Use `useRef` for values that don't need to trigger re-renders
 
-### Part 2: Convert useState to useRef
+3. Eliminate Redundant State
 
-**Goal**: Use `useRef` for values that don't need to trigger re-renders
-
-**Components to refactor**:
-
-1. **BookingTimer** - Convert `timerId` from `useState` to `useRef`
-2. **HotelGallery** - Convert `lastScrollPosition` from `useState` to `useRef`
-3. **FlightSearch** - Convert `searchCount` and `lastSearchTime` to `useRef`
-
-**Steps for each component**:
-
-- Replace `useState` with `useRef` for tracking values
-- Update references to use `.current`
-- Remove unnecessary effect dependencies
-- Verify the component still works but with fewer re-renders
-
-### Part 3: Eliminate Redundant State
-
-**Goal**: Store minimal state and derive everything else
-
-**Steps for each component**:
-
-- Identify what data is truly necessary to store
-- Remove redundant state variables
-- Remove syncing effects
-- Calculate derived/formatted values during render
-- Use `useMemo` for expensive formatting if needed
+   **Goal**: Store minimal state and derive everything else
 
 ### Success Criteria
 
