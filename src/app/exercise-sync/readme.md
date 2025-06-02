@@ -1,0 +1,2 @@
+- refactor to useSyncExternalStore
+- bonus: derive average delay and total delayed flights

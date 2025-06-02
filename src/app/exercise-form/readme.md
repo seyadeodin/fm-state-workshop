@@ -1,0 +1,3 @@
+- Consolidating state
+- Using formData instead of useState
+- Using useActionState instead of useState
