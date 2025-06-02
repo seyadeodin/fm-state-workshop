@@ -4,15 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import {
-  createContext,
-  useContext,
-  useReducer,
-  useEffect,
-  useState,
-} from 'react';
-import { fetchHotels } from './fetchHotels';
-import { fetchFlights } from './fetchFlights';
+import { createContext, useContext, useReducer } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fetchHotels } from '../fetchHotels';
+import { fetchFlights } from '../fetchFlights';
 
 // Types
 enum Step {
@@ -280,28 +276,10 @@ function FlightSearchResults() {
   const { state, dispatch } = useContext(BookingContext)!;
   const { selectedFlight, flightSearch } = state;
 
-  const [flights, setFlights] = useState<FlightOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadFlights = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const flightData = await fetchFlights(flightSearch);
-        setFlights(flightData);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to fetch flights'
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadFlights();
-  }, [flightSearch]);
+  const { data: flights, isLoading } = useQuery({
+    queryKey: ['flights', flightSearch],
+    queryFn: () => fetchFlights(flightSearch),
+  });
 
   const handleSelectFlight = (flight: FlightOption) => {
     dispatch({ type: 'flightSelected', flight: flight });
@@ -311,14 +289,6 @@ function FlightSearchResults() {
     return (
       <div className="flex items-center justify-center h-48">
         <div className="text-gray-500">Loading flights...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <div className="text-red-500">Error: {error}</div>
       </div>
     );
   }
@@ -457,26 +427,10 @@ function HotelSearchResults() {
   const { state, dispatch } = useContext(BookingContext)!;
   const { selectedHotel, hotelSearch } = state;
 
-  const [hotels, setHotels] = useState<HotelOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadHotels = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const hotelData = await fetchHotels(hotelSearch);
-        setHotels(hotelData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch hotels');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadHotels();
-  }, [hotelSearch]);
+  const { data: hotels, isLoading } = useQuery({
+    queryKey: ['hotels', hotelSearch],
+    queryFn: () => fetchHotels(hotelSearch),
+  });
 
   const handleSelectHotel = (hotel: HotelOption) => {
     dispatch({ type: 'hotelSelected', payload: hotel });
@@ -486,14 +440,6 @@ function HotelSearchResults() {
     return (
       <div className="flex items-center justify-center h-48">
         <div className="text-gray-500">Loading hotels...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <div className="text-red-500">Error: {error}</div>
       </div>
     );
   }
@@ -682,5 +628,9 @@ function BookingFlow() {
 }
 
 export default function Page() {
-  return <BookingFlow />;
+  return (
+    <QueryClientProvider client={new QueryClient()}>
+      <BookingFlow />
+    </QueryClientProvider>
+  );
 }
