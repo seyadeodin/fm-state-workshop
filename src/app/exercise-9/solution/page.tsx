@@ -28,33 +28,80 @@ interface Destination {
 interface ItineraryState {
   destinations: Destination[];
   todos: TodoItem[];
+  events: Action[];
+  undos: Action[];
 }
 
 // Action types
 type Action =
-  | { type: 'ADD_DESTINATION' }
+  | { type: 'ADD_DESTINATION'; id: string }
   | { type: 'UPDATE_DESTINATION'; destinationId: string; name: string }
   | { type: 'DELETE_DESTINATION'; destinationId: string }
-  | { type: 'ADD_TODO'; destinationId: string; text: string }
-  | { type: 'DELETE_TODO'; destinationId: string; todoId: string };
+  | { type: 'ADD_TODO'; id: string; destinationId: string; text: string }
+  | { type: 'DELETE_TODO'; destinationId: string; todoId: string }
+  | { type: 'UNDO' }
+  | { type: 'REDO' };
+
+const initialState: ItineraryState = {
+  destinations: [],
+  todos: [],
+  events: [],
+  undos: [],
+};
 
 // Reducer function
 function itineraryReducer(
   state: ItineraryState,
   action: Action
 ): ItineraryState {
+  if (action.type === 'UNDO') {
+    let undoneState = initialState;
+    const events = [];
+    const undos = [...state.undos];
+
+    for (let eventIndex = 0; eventIndex < state.events.length; eventIndex++) {
+      if (eventIndex === state.events.length - 1) {
+        undos.push(state.events[eventIndex]);
+      } else {
+        undoneState = itineraryReducer(undoneState, state.events[eventIndex]);
+        events.push(state.events[eventIndex]);
+      }
+    }
+
+    console.log('undoneState', undoneState, { events, undos });
+
+    return {
+      ...undoneState,
+      events,
+      undos,
+    };
+  }
+  if (action.type === 'REDO') {
+    const lastEvent = state.undos[state.undos.length - 1];
+    if (!lastEvent) return state;
+    const newState = itineraryReducer(state, lastEvent);
+    return {
+      ...newState,
+      events: [...state.events, lastEvent],
+      undos: state.undos.slice(0, -1),
+    };
+  }
+
+  const events = state.events.concat(action);
+
   switch (action.type) {
     case 'ADD_DESTINATION':
       return {
         ...state,
-        destinations: [
-          ...state.destinations,
-          { id: crypto.randomUUID(), name: '' },
-        ],
+        events,
+        undos: [],
+        destinations: [...state.destinations, { id: action.id, name: '' }],
       };
     case 'UPDATE_DESTINATION':
       return {
         ...state,
+        events,
+        undos: [],
         destinations: state.destinations.map((dest) =>
           dest.id === action.destinationId
             ? { ...dest, name: action.name }
@@ -64,6 +111,8 @@ function itineraryReducer(
     case 'DELETE_DESTINATION':
       return {
         ...state,
+        events,
+        undos: [],
         destinations: state.destinations.filter(
           (dest) => dest.id !== action.destinationId
         ),
@@ -71,6 +120,8 @@ function itineraryReducer(
     case 'ADD_TODO':
       return {
         ...state,
+        events,
+        undos: [],
         todos: [
           ...state.todos,
           {
@@ -83,6 +134,8 @@ function itineraryReducer(
     case 'DELETE_TODO':
       return {
         ...state,
+        events,
+        undos: [],
         todos: state.todos.filter((todo) => todo.id !== action.todoId),
       };
     default:
@@ -91,19 +144,18 @@ function itineraryReducer(
 }
 
 export default function ItineraryPage() {
-  const [state, dispatch] = useReducer(itineraryReducer, {
-    destinations: [],
-    todos: [],
-  });
+  const [state, dispatch] = useReducer(itineraryReducer, initialState);
   const lastInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddDestination = () => {
-    dispatch({ type: 'ADD_DESTINATION' });
+    dispatch({ type: 'ADD_DESTINATION', id: crypto.randomUUID() });
     // Focus the new input after render
     setTimeout(() => {
       lastInputRef.current?.focus();
     }, 0);
   };
+
+  console.log('state', state);
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
@@ -155,6 +207,7 @@ export default function ItineraryPage() {
                 onAddTodo={(data) => {
                   dispatch({
                     type: 'ADD_TODO',
+                    id: crypto.randomUUID(),
                     destinationId: data.destinationId,
                     text: data.text,
                   });
@@ -173,10 +226,18 @@ export default function ItineraryPage() {
       </div>
 
       <div className="flex gap-2 pt-6 border-t">
-        <Button variant="outline" disabled>
+        <Button
+          variant="outline"
+          disabled={state.events.length === 0}
+          onClick={() => dispatch({ type: 'UNDO' })}
+        >
           Undo
         </Button>
-        <Button variant="outline" disabled>
+        <Button
+          variant="outline"
+          disabled={state.undos.length === 0}
+          onClick={() => dispatch({ type: 'REDO' })}
+        >
           Redo
         </Button>
       </div>
@@ -208,7 +269,7 @@ function DestinationCard({
             <Input
               type="text"
               defaultValue={destination.name}
-              onChange={(e) =>
+              onBlur={(e) =>
                 onUpdate({
                   ...destination,
                   name: e.target.value,
