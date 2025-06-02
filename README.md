@@ -44,13 +44,13 @@ pnpm test
 ## Workshop Schedule & Exercises
 
 - [Exercise: Antipatterns](http://localhost:3000/exercise-antipatterns) - Common state management mistakes
+- [Exercise: Combining state](http://localhost:3000/exercise-combine) - Combining state patterns
 - [Exercise: Reducer](http://localhost:3000/exercise-reducer) - Building with useReducer
 - [Exercise: Diagrams](http://localhost:3000/exercise-diagrams) - State visualization techniques
 - [Exercise: Finite](http://localhost:3000/exercise-finite) - Finite state machines
 - [Exercise: Effects](http://localhost:3000/exercise-effects) - Managing side effects
 - [Exercise: Sync](http://localhost:3000/exercise-sync) - Synchronization patterns
 - [Exercise: Form](http://localhost:3000/exercise-form) - Event-driven form handling
-- [Exercise: Combine](http://localhost:3000/exercise-combine) - Combining state patterns
 - [Exercise: Fetch](http://localhost:3000/exercise-fetch) - Data fetching patterns
 - [Exercise: URL](http://localhost:3000/exercise-url) - URL state synchronization
 - [Exercise: Test](http://localhost:3000/exercise-test) - Testing state management
@@ -75,3 +75,10 @@ pnpm test
 - [TanStack Query Documentation](https://tanstack.com/query)
 
 Happy coding! 🚀
+
+---
+
+- Who is this for?
+- What am I going to get out of this?
+- What is the structure of the workshop?
+- Caveats: adding to your toolset, it's not a strict set of rules, it's a set of patterns and anti-patterns to help you make better decisions.

@@ -4,14 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import {
-  createContext,
-  use,
-  useReducer,
-  useEffect,
-  useState,
-  use,
-} from 'react';
+import { createContext, use, useReducer, useEffect, useState } from 'react';
+
 import { fetchHotels } from './fetchHotels';
 import { fetchFlights } from './fetchFlights';
 
