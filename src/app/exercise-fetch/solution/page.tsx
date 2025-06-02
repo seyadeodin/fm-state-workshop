@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { createContext, useContext, useReducer } from 'react';
+import { createContext, use, useReducer } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fetchHotels } from '../fetchHotels';
@@ -173,7 +173,7 @@ function bookingReducer(
 
 // Components
 function FlightBookingForm() {
-  const { state, dispatch } = useContext(BookingContext)!;
+  const { state, dispatch } = use(BookingContext)!;
   const { flightSearch } = state;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -273,7 +273,7 @@ function FlightBookingForm() {
 }
 
 function FlightSearchResults() {
-  const { state, dispatch } = useContext(BookingContext)!;
+  const { state, dispatch } = use(BookingContext)!;
   const { selectedFlight, flightSearch } = state;
 
   const { data: flights, isLoading } = useQuery({
@@ -335,7 +335,7 @@ function FlightSearchResults() {
 }
 
 function HotelBookingForm() {
-  const { state, dispatch } = useContext(BookingContext)!;
+  const { state, dispatch } = use(BookingContext)!;
   const { hotelSearch } = state;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -424,7 +424,7 @@ function HotelBookingForm() {
 }
 
 function HotelSearchResults() {
-  const { state, dispatch } = useContext(BookingContext)!;
+  const { state, dispatch } = use(BookingContext)!;
   const { selectedHotel, hotelSearch } = state;
 
   const { data: hotels, isLoading } = useQuery({
@@ -487,7 +487,7 @@ function HotelSearchResults() {
 }
 
 function BookingReview() {
-  const { state, dispatch } = useContext(BookingContext)!;
+  const { state, dispatch } = use(BookingContext)!;
   const { selectedFlight, selectedHotel, flightSearch, hotelSearch } = state;
 
   const handleConfirm = () => {
@@ -555,7 +555,7 @@ function BookingReview() {
 }
 
 function BookingConfirmation() {
-  const { state } = useContext(BookingContext)!;
+  const { state } = use(BookingContext)!;
   const { selectedFlight, selectedHotel } = state;
 
   return (

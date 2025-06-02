@@ -14,7 +14,7 @@
   - Framework-agnostic solutions
   - Built-in persistence and middleware support
 
-As React applications grow larger and more complex, relying solely on built-in state management (`useState`, `useReducer`, `useContext`) starts to reveal several limitations:
+As React applications grow larger and more complex, relying solely on built-in state management (`useState`, `useReducer`, ~~`useContext`~~ `use`) starts to reveal several limitations:
 
 ### Problems with React's Built-in State at Scale
 

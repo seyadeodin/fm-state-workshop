@@ -4,13 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import {
-  createContext,
-  useContext,
-  useReducer,
-  ReactNode,
-  useState,
-} from 'react';
+import { createContext, use, useReducer, ReactNode, useState } from 'react';
 import { FlightOption, getFlightOptions } from '@/app/exerciseUtils';
 
 type FormData = {
@@ -108,7 +102,7 @@ function BookingProvider({ children }: { children: ReactNode }) {
 }
 
 function useBooking() {
-  const context = useContext(BookingContext);
+  const context = use(BookingContext);
   if (!context) {
     throw new Error('useBooking must be used within a BookingProvider');
   }
