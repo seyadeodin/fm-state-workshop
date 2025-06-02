@@ -4,12 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useState, useEffect } from 'react';
-import { useQueryState } from 'nuqs';
+import { createContext, useContext, useReducer } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-interface Layover {
-  city: string;
-  duration: string;
+// Types
+enum Step {
+  FLIGHT_SEARCH = 'FLIGHT_SEARCH',
+  FLIGHT_RESULTS = 'FLIGHT_RESULTS',
+  HOTEL_SEARCH = 'HOTEL_SEARCH',
+  HOTEL_RESULTS = 'HOTEL_RESULTS',
+  REVIEW = 'REVIEW',
+  CONFIRMATION = 'CONFIRMATION',
 }
 
 interface FlightOption {
@@ -17,134 +23,328 @@ interface FlightOption {
   airline: string;
   price: number;
   duration: string;
-  layovers: Layover[];
 }
 
-interface SearchResultsProps {
-  flightOptions: FlightOption[];
+interface HotelOption {
+  id: string;
+  name: string;
+  price: number;
+  rating: number;
+  amenities: string[];
+}
+interface FlightSearch {
+  destination: string;
+  departure: string;
+  arrival: string;
   passengers: number;
-  onBack: () => void;
+  isOneWay: boolean;
 }
 
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
-        <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
-      </div>
-
-      <div className="flex items-center space-x-4 mb-4">
-        <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
-        <div className="h-6 w-48 bg-gray-200 rounded animate-pulse" />
-      </div>
-
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="p-4 border rounded">
-            <div className="flex justify-between items-center">
-              <div className="space-y-2">
-                <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
-                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                <div className="h-4 w-40 bg-gray-200 rounded animate-pulse" />
-              </div>
-              <div className="text-right space-y-2">
-                <div className="h-6 w-20 bg-gray-200 rounded animate-pulse" />
-                <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+interface HotelSearch {
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  roomType: string;
 }
 
-function SearchResults({
-  flightOptions,
-  passengers,
-  onBack,
-  isLoading,
-}: SearchResultsProps & { isLoading: boolean }) {
-  const [selectedFlight, setSelectedFlight] = useState<FlightOption | null>(
-    null
-  );
-  const [showDirectOnly, setShowDirectOnly] = useQueryState('directOnly', {
-    parse: (value) => value === 'true',
-    serialize: (value) => value.toString(),
-  });
-  const [sortBy, setSortBy] = useQueryState('sortBy', {
-    parse: (value) => (value === 'duration' ? 'duration' : 'price'),
-    serialize: (value) => value,
-  });
-  const [sortOrder, setSortOrder] = useQueryState('sortOrder', {
-    parse: (value) => (value === 'desc' ? 'desc' : 'asc'),
-    serialize: (value) => value,
-  });
-  const totalPrice = selectedFlight ? selectedFlight.price * passengers : 0;
+interface BookingState {
+  currentStep: Step;
+  flightSearch: FlightSearch;
+  selectedFlight: FlightOption | null;
+  hotelSearch: HotelSearch;
+  selectedHotel: HotelOption | null;
+}
 
-  const filteredFlights = flightOptions
-    .filter((flight) => !showDirectOnly || flight.layovers.length === 0)
-    .sort((a, b) => {
-      if (sortBy === 'price') {
-        return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
-      } else {
-        // Convert duration strings to minutes for comparison
-        const getDurationInMinutes = (duration: string) => {
-          const [hours, minutes] = duration.split('h ').map(Number);
-          return hours * 60 + minutes;
-        };
-        return sortOrder === 'asc'
-          ? getDurationInMinutes(a.duration) - getDurationInMinutes(b.duration)
-          : getDurationInMinutes(b.duration) - getDurationInMinutes(a.duration);
+type BookingAction =
+  | {
+      type: 'flightSearchUpdated';
+      payload: Partial<BookingState['flightSearch']>;
+    }
+  | {
+      type: 'flightSearchSubmitted';
+    }
+  | { type: 'flightSelected'; flight: FlightOption | null }
+  | {
+      type: 'hotelSearchUpdated';
+      payload: Partial<BookingState['hotelSearch']>;
+    }
+  | {
+      type: 'hotelSearchSubmitted';
+    }
+  | { type: 'hotelSelected'; payload: HotelOption | null }
+  | { type: 'RESET_HOTEL' }
+  | { type: 'back' }
+  | { type: 'changeFlight' }
+  | { type: 'changeHotel' }
+  | { type: 'bookingConfirmed' };
+
+// Context
+const BookingContext = createContext<{
+  state: BookingState;
+  dispatch: React.Dispatch<BookingAction>;
+} | null>(null);
+
+// Reducer
+function bookingReducer(
+  state: BookingState,
+  action: BookingAction
+): BookingState {
+  switch (action.type) {
+    case 'flightSearchUpdated':
+      return {
+        ...state,
+        flightSearch: { ...state.flightSearch, ...action.payload },
+      };
+    case 'flightSearchSubmitted':
+      return {
+        ...state,
+        // set hotel dates to same as flight dates
+        hotelSearch: {
+          ...state.hotelSearch,
+          checkIn: state.flightSearch.departure,
+          checkOut: state.flightSearch.arrival,
+        },
+        currentStep: Step.FLIGHT_RESULTS,
+      };
+    case 'flightSelected':
+      return {
+        ...state,
+        selectedFlight: action.flight,
+        currentStep: Step.HOTEL_SEARCH,
+      };
+    case 'hotelSearchUpdated':
+      return {
+        ...state,
+        hotelSearch: { ...state.hotelSearch, ...action.payload },
+      };
+    case 'hotelSearchSubmitted':
+      return {
+        ...state,
+        currentStep: Step.HOTEL_RESULTS,
+      };
+    case 'hotelSelected':
+      return {
+        ...state,
+        selectedHotel: action.payload,
+        currentStep: Step.REVIEW,
+      };
+    case 'back':
+      switch (state.currentStep) {
+        case Step.FLIGHT_RESULTS:
+          return {
+            ...state,
+            currentStep: Step.FLIGHT_SEARCH,
+          };
+        case Step.HOTEL_RESULTS:
+          return {
+            ...state,
+            currentStep: Step.HOTEL_SEARCH,
+          };
+        case Step.REVIEW:
+          return {
+            ...state,
+            currentStep: Step.HOTEL_RESULTS,
+          };
+        default:
+          return state;
       }
-    });
+    case 'changeFlight':
+      return {
+        ...state,
+        currentStep: Step.FLIGHT_SEARCH,
+      };
+    case 'changeHotel':
+      return {
+        ...state,
+        currentStep: Step.HOTEL_SEARCH,
+      };
+    case 'bookingConfirmed':
+      return {
+        ...state,
+        currentStep: Step.CONFIRMATION,
+      };
+
+    default:
+      return state;
+  }
+}
+
+// Add these API functions before the components
+async function fetchFlights(
+  searchParams: FlightSearch
+): Promise<FlightOption[]> {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  return [
+    { id: '1', airline: 'Sky Airways', price: 299, duration: '2h 30m' },
+    { id: '2', airline: 'Ocean Air', price: 349, duration: '2h 45m' },
+    { id: '3', airline: 'Mountain Express', price: 279, duration: '3h 15m' },
+  ];
+}
+
+async function fetchHotels(searchParams: HotelSearch): Promise<HotelOption[]> {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  return [
+    {
+      id: '1',
+      name: 'Grand Hotel',
+      price: 199,
+      rating: 4.5,
+      amenities: ['Pool', 'Spa', 'Restaurant'],
+    },
+    {
+      id: '2',
+      name: 'Seaside Resort',
+      price: 249,
+      rating: 4.8,
+      amenities: ['Beach Access', 'Pool', 'Bar'],
+    },
+    {
+      id: '3',
+      name: 'City Center Hotel',
+      price: 179,
+      rating: 4.2,
+      amenities: ['Gym', 'Restaurant', 'Business Center'],
+    },
+  ];
+}
+
+// Components
+function FlightBookingForm() {
+  const { state, dispatch } = useContext(BookingContext)!;
+  const { flightSearch } = state;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch({ type: 'flightSearchSubmitted' });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex items-center space-x-2 mb-4">
+        <Switch
+          id="one-way"
+          checked={flightSearch.isOneWay}
+          onCheckedChange={(checked) =>
+            dispatch({
+              type: 'flightSearchUpdated',
+              payload: { isOneWay: checked },
+            })
+          }
+        />
+        <Label htmlFor="one-way">One-way flight</Label>
+      </div>
+
+      <div>
+        <Label htmlFor="destination">Destination</Label>
+        <Input
+          type="text"
+          id="destination"
+          value={flightSearch.destination}
+          onChange={(e) =>
+            dispatch({
+              type: 'flightSearchUpdated',
+              payload: { destination: e.target.value },
+            })
+          }
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="departure">Departure Date</Label>
+        <Input
+          type="date"
+          id="departure"
+          value={flightSearch.departure}
+          onChange={(e) =>
+            dispatch({
+              type: 'flightSearchUpdated',
+              payload: { departure: e.target.value },
+            })
+          }
+          required
+        />
+      </div>
+
+      {!flightSearch.isOneWay && (
+        <div>
+          <Label htmlFor="arrival">Return Date</Label>
+          <Input
+            type="date"
+            id="arrival"
+            value={flightSearch.arrival}
+            onChange={(e) =>
+              dispatch({
+                type: 'flightSearchUpdated',
+                payload: { arrival: e.target.value },
+              })
+            }
+            required
+          />
+        </div>
+      )}
+
+      <div>
+        <Label htmlFor="passengers">Number of Passengers</Label>
+        <Input
+          type="number"
+          id="passengers"
+          value={flightSearch.passengers}
+          onChange={(e) =>
+            dispatch({
+              type: 'flightSearchUpdated',
+              payload: { passengers: parseInt(e.target.value) },
+            })
+          }
+          min="1"
+          max="9"
+          required
+        />
+      </div>
+
+      <Button type="submit" className="w-full">
+        Search Flights
+      </Button>
+    </form>
+  );
+}
+
+function FlightSearchResults() {
+  const { state, dispatch } = useContext(BookingContext)!;
+  const { selectedFlight, flightSearch } = state;
+
+  const { data: flights, isLoading } = useQuery({
+    queryKey: ['flights', flightSearch],
+    queryFn: () => fetchFlights(flightSearch),
+  });
+
+  const handleSelectFlight = (flight: FlightOption) => {
+    dispatch({ type: 'flightSelected', flight: flight });
+  };
 
   if (isLoading) {
-    return <LoadingSkeleton />;
+    return (
+      <div className="flex items-center justify-center h-48">
+        <div className="text-gray-500">Loading flights...</div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Search Results</h2>
-        <Button variant="outline" onClick={onBack}>
+        <h2 className="text-2xl font-bold">Available Flights</h2>
+        <Button variant="outline" onClick={() => dispatch({ type: 'back' })}>
           Back to Search
         </Button>
       </div>
 
-      <div className="flex items-center space-x-4 mb-4">
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="direct-only"
-            checked={showDirectOnly || false}
-            onCheckedChange={(checked) => setShowDirectOnly(checked)}
-          />
-          <Label htmlFor="direct-only">Direct flights only</Label>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <Label>Sort by:</Label>
-          <select
-            value={sortBy || 'price'}
-            onChange={(e) => setSortBy(e.target.value as 'price' | 'duration')}
-            className="border rounded p-1"
-          >
-            <option value="price">Price</option>
-            <option value="duration">Duration</option>
-          </select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-          >
-            {sortOrder === 'asc' ? '↑' : '↓'}
-          </Button>
-        </div>
-      </div>
-
       <div className="space-y-4">
-        {filteredFlights.map((flight) => (
+        {flights?.map((flight) => (
           <div
             key={flight.id}
             className={`p-4 border rounded hover:shadow-md ${
@@ -157,322 +357,321 @@ function SearchResults({
               <div>
                 <h3 className="font-medium">{flight.airline}</h3>
                 <p className="text-gray-600">Duration: {flight.duration}</p>
-                {flight.layovers.length > 0 && (
-                  <div className="text-sm text-gray-500">
-                    <p>Layovers:</p>
-                    <ul className="list-disc list-inside">
-                      {flight.layovers.map((layover, index) => (
-                        <li key={index}>
-                          {layover.city} ({layover.duration})
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
               <div className="text-right">
                 <p className="text-xl font-bold">${flight.price}</p>
                 <Button
-                  className="mt-2 bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600"
-                  onClick={() => setSelectedFlight(flight)}
+                  className="mt-2"
+                  onClick={() => handleSelectFlight(flight)}
                 >
-                  {selectedFlight?.id === flight.id ? 'Selected' : 'Select'}
+                  Select
                 </Button>
               </div>
             </div>
           </div>
         ))}
       </div>
-
-      {selectedFlight && (
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Booking Summary</h3>
-          <div className="space-y-2">
-            <p>Flight: {selectedFlight.airline}</p>
-            <p>Duration: {selectedFlight.duration}</p>
-            <p>Passengers: {passengers}</p>
-            <p className="text-xl font-bold mt-4">Total: ${totalPrice}</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-function BookingForm({
-  onSubmit,
-  isSubmitting,
-}: {
-  onSubmit: (formData: {
-    destination: string;
-    departure: string;
-    arrival: string;
-    passengers: number;
-    isOneWay: boolean;
-  }) => void;
-  isSubmitting: boolean;
-}) {
-  const [destination, setDestination] = useQueryState('destination');
-  const [departure, setDeparture] = useQueryState('departure');
-  const [arrival, setArrival] = useQueryState('arrival');
-  const [passengers, setPassengers] = useQueryState('passengers', {
-    parse: (value) => parseInt(value) || 1,
-    serialize: (value) => value.toString(),
-  });
-  const [isOneWay, setIsOneWay] = useQueryState('isOneWay', {
-    parse: (value) => value === 'true',
-    serialize: (value) => value.toString(),
-  });
+function HotelBookingForm() {
+  const { state, dispatch } = useContext(BookingContext)!;
+  const { hotelSearch } = state;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      destination: destination || '',
-      departure: departure || '',
-      arrival: arrival || '',
-      passengers: passengers || 1,
-      isOneWay: isOneWay || false,
-    });
+    dispatch({ type: 'hotelSearchSubmitted' });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex items-center space-x-2 mb-4">
-        <Switch
-          id="one-way"
-          checked={isOneWay || false}
-          onCheckedChange={(checked) => setIsOneWay(checked)}
-        />
-        <Label htmlFor="one-way">One-way flight</Label>
-      </div>
-
+      <h2 className="text-2xl font-bold">Hotel Booking</h2>
       <div>
-        <Label htmlFor="destination" className="block mb-1">
-          Destination
-        </Label>
-        <Input
-          type="text"
-          id="destination"
-          value={destination || ''}
-          onChange={(e) => setDestination(e.target.value)}
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="departure" className="block mb-1">
-          Departure Date
-        </Label>
+        <Label htmlFor="checkIn">Check-in Date</Label>
         <Input
           type="date"
-          id="departure"
-          value={departure || ''}
-          onChange={(e) => setDeparture(e.target.value)}
+          id="checkIn"
+          value={hotelSearch.checkIn}
+          onChange={(e) =>
+            dispatch({
+              type: 'hotelSearchUpdated',
+              payload: { checkIn: e.target.value },
+            })
+          }
           required
         />
       </div>
-
-      {!isOneWay && (
-        <div>
-          <Label htmlFor="arrival" className="block mb-1">
-            Return Date
-          </Label>
-          <Input
-            type="date"
-            id="arrival"
-            value={arrival || ''}
-            onChange={(e) => setArrival(e.target.value)}
-            required
-          />
-        </div>
-      )}
 
       <div>
-        <Label htmlFor="passengers" className="block mb-1">
-          Number of Passengers
-        </Label>
+        <Label htmlFor="checkOut">Check-out Date</Label>
         <Input
-          type="number"
-          id="passengers"
-          value={passengers || 1}
-          onChange={(e) => setPassengers(parseInt(e.target.value))}
-          min="1"
-          max="9"
+          type="date"
+          id="checkOut"
+          value={hotelSearch.checkOut}
+          onChange={(e) =>
+            dispatch({
+              type: 'hotelSearchUpdated',
+              payload: { checkOut: e.target.value },
+            })
+          }
           required
         />
       </div>
 
-      <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? 'Searching...' : 'Search Flights'}
+      <div>
+        <Label htmlFor="guests">Number of Guests</Label>
+        <Input
+          type="number"
+          id="guests"
+          value={hotelSearch.guests}
+          onChange={(e) =>
+            dispatch({
+              type: 'hotelSearchUpdated',
+              payload: { guests: parseInt(e.target.value) },
+            })
+          }
+          min="1"
+          max="4"
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="roomType">Room Type</Label>
+        <select
+          id="roomType"
+          value={hotelSearch.roomType}
+          onChange={(e) =>
+            dispatch({
+              type: 'hotelSearchUpdated',
+              payload: { roomType: e.target.value },
+            })
+          }
+          className="w-full p-2 border rounded"
+          required
+        >
+          <option value="standard">Standard</option>
+          <option value="deluxe">Deluxe</option>
+          <option value="suite">Suite</option>
+        </select>
+      </div>
+
+      <Button type="submit" className="w-full">
+        Search Hotels
       </Button>
     </form>
   );
 }
 
-export default function Exercise7() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isError, setIsError] = useState(false);
-  const [flightOptions, setFlightOptions] = useState<FlightOption[]>([]);
-  const [view, setView] = useQueryState('view', {
-    parse: (value) => (value === 'results' ? 'results' : 'search'),
-    serialize: (value) => value,
-    defaultValue: 'search',
+function HotelSearchResults() {
+  const { state, dispatch } = useContext(BookingContext)!;
+  const { selectedHotel, hotelSearch } = state;
+
+  const { data: hotels, isLoading } = useQuery({
+    queryKey: ['hotels', hotelSearch],
+    queryFn: () => fetchHotels(hotelSearch),
   });
-  const [searchParams, setSearchParams] = useState<{
-    destination: string;
-    departure: string;
-    arrival: string;
-    passengers: number;
-    isOneWay: boolean;
-  } | null>(null);
 
-  // Add effect to load search results when URL has search params
-  useEffect(() => {
-    const loadSearchResults = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const hasSearchParams =
-        params.has('destination') && params.has('departure');
+  const handleSelectHotel = (hotel: HotelOption) => {
+    dispatch({ type: 'hotelSelected', payload: hotel });
+  };
 
-      if (hasSearchParams && view === 'results') {
-        setIsSubmitting(true);
-        try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 1500));
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <div className="text-gray-500">Loading hotels...</div>
+      </div>
+    );
+  }
 
-          // Mock flight options with layovers
-          const mockFlights: FlightOption[] = [
-            {
-              id: '1',
-              airline: 'Sky Airways',
-              price: 299,
-              duration: '2h 30m',
-              layovers: [],
-            },
-            {
-              id: '2',
-              airline: 'Ocean Air',
-              price: 349,
-              duration: '2h 45m',
-              layovers: [
-                { city: 'Chicago', duration: '1h 15m' },
-                { city: 'Denver', duration: '45m' },
-              ],
-            },
-            {
-              id: '3',
-              airline: 'Mountain Express',
-              price: 279,
-              duration: '3h 15m',
-              layovers: [{ city: 'Phoenix', duration: '1h 30m' }],
-            },
-            {
-              id: '4',
-              airline: 'Pacific Airlines',
-              price: 329,
-              duration: '2h 15m',
-              layovers: [],
-            },
-          ];
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Available Hotels</h2>
+        <Button variant="outline" onClick={() => dispatch({ type: 'back' })}>
+          Back to Search
+        </Button>
+      </div>
 
-          setFlightOptions(mockFlights);
-          setSearchParams({
-            destination: params.get('destination') || '',
-            departure: params.get('departure') || '',
-            arrival: params.get('arrival') || '',
-            passengers: parseInt(params.get('passengers') || '1'),
-            isOneWay: params.get('isOneWay') === 'true',
-          });
-        } catch {
-          setIsError(true);
-        } finally {
-          setIsSubmitting(false);
-        }
-      }
-    };
+      <div className="space-y-4">
+        {hotels?.map((hotel) => (
+          <div
+            key={hotel.id}
+            className={`p-4 border rounded hover:shadow-md ${
+              selectedHotel?.id === hotel.id ? 'border-blue-500 bg-blue-50' : ''
+            }`}
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-medium">{hotel.name}</h3>
+                <p className="text-gray-600">Rating: {hotel.rating}/5</p>
+                <p className="text-sm text-gray-500">
+                  {hotel.amenities.join(', ')}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold">${hotel.price}/night</p>
+                <Button
+                  className="mt-2"
+                  onClick={() => handleSelectHotel(hotel)}
+                >
+                  Select
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-    loadSearchResults();
-  }, [view]);
+function BookingReview() {
+  const { state, dispatch } = useContext(BookingContext)!;
+  const { selectedFlight, selectedHotel, flightSearch, hotelSearch } = state;
 
-  const handleSubmit = async (formData: {
-    destination: string;
-    departure: string;
-    arrival: string;
-    passengers: number;
-    isOneWay: boolean;
-  }) => {
-    setIsSubmitting(true);
-    setIsError(false);
-    setSearchParams(formData);
-    setView('results');
+  const handleConfirm = () => {
+    dispatch({ type: 'bookingConfirmed' });
+  };
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+  const handleBack = () => {
+    dispatch({ type: 'back' });
+  };
 
-      // Mock flight options with layovers
-      const mockFlights: FlightOption[] = [
-        {
-          id: '1',
-          airline: 'Sky Airways',
-          price: 299,
-          duration: '2h 30m',
-          layovers: [],
-        },
-        {
-          id: '2',
-          airline: 'Ocean Air',
-          price: 349,
-          duration: '2h 45m',
-          layovers: [
-            { city: 'Chicago', duration: '1h 15m' },
-            { city: 'Denver', duration: '45m' },
-          ],
-        },
-        {
-          id: '3',
-          airline: 'Mountain Express',
-          price: 279,
-          duration: '3h 15m',
-          layovers: [{ city: 'Phoenix', duration: '1h 30m' }],
-        },
-        {
-          id: '4',
-          airline: 'Pacific Airlines',
-          price: 329,
-          duration: '2h 15m',
-          layovers: [],
-        },
-      ];
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Review Your Booking</h2>
 
-      setFlightOptions(mockFlights);
-    } catch {
-      setIsError(true);
-    } finally {
-      setIsSubmitting(false);
+      <div className="space-y-4">
+        <div className="p-4 border rounded">
+          <h3 className="font-bold mb-2">Flight Details</h3>
+          <p>Airline: {selectedFlight?.airline}</p>
+          <p>Duration: {selectedFlight?.duration}</p>
+          <p>Price: ${selectedFlight?.price}</p>
+          <p>Passengers: {flightSearch.passengers}</p>
+          <Button
+            variant="outline"
+            className="mt-2"
+            onClick={() => {
+              dispatch({ type: 'changeFlight' });
+            }}
+          >
+            Change Flight
+          </Button>
+        </div>
+
+        <div className="p-4 border rounded">
+          <h3 className="font-bold mb-2">Hotel Details</h3>
+          <p>Hotel: {selectedHotel?.name}</p>
+          <p>Rating: {selectedHotel?.rating}/5</p>
+          <p>Price: ${selectedHotel?.price}/night</p>
+          <p>Room Type: {hotelSearch.roomType}</p>
+          <p>Guests: {hotelSearch.guests}</p>
+          <Button
+            variant="outline"
+            className="mt-2"
+            onClick={() => dispatch({ type: 'changeHotel' })}
+          >
+            Change Hotel
+          </Button>
+        </div>
+
+        <div className="p-4 bg-gray-50 rounded">
+          <h3 className="font-bold mb-2">Total Cost</h3>
+          <p className="text-xl">
+            ${(selectedFlight?.price || 0) + (selectedHotel?.price || 0)}
+          </p>
+        </div>
+
+        <div className="flex space-x-4">
+          <Button variant="outline" onClick={handleBack}>
+            Back
+          </Button>
+          <Button onClick={handleConfirm}>Confirm Booking</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BookingConfirmation() {
+  const { state } = useContext(BookingContext)!;
+  const { selectedFlight, selectedHotel } = state;
+
+  return (
+    <div className="text-center space-y-6">
+      <div className="text-6xl">🎉</div>
+      <h2 className="text-2xl font-bold">Booking Confirmed!</h2>
+      <p className="text-gray-600">
+        Thank you for booking with us. Your confirmation details have been sent
+        to your email.
+      </p>
+      <div className="p-4 border rounded inline-block text-left">
+        <h3 className="font-bold mb-2">Booking Reference</h3>
+        <p>Flight: {selectedFlight?.airline}</p>
+        <p>Hotel: {selectedHotel?.name}</p>
+      </div>
+    </div>
+  );
+}
+
+// Main Component
+function BookingFlow() {
+  const initialState: BookingState = {
+    currentStep: Step.FLIGHT_SEARCH,
+    flightSearch: {
+      destination: '',
+      departure: '',
+      arrival: '',
+      passengers: 1,
+      isOneWay: false,
+    },
+    selectedFlight: null,
+    hotelSearch: {
+      checkIn: '',
+      checkOut: '',
+      guests: 1,
+      roomType: 'standard',
+    },
+    selectedHotel: null,
+  };
+
+  const [state, dispatch] = useReducer(bookingReducer, initialState);
+
+  const renderStep = () => {
+    switch (state.currentStep) {
+      case Step.FLIGHT_SEARCH:
+        return <FlightBookingForm />;
+      case Step.FLIGHT_RESULTS:
+        return <FlightSearchResults />;
+      case Step.HOTEL_SEARCH:
+        return <HotelBookingForm />;
+      case Step.HOTEL_RESULTS:
+        return <HotelSearchResults />;
+      case Step.REVIEW:
+        return <BookingReview />;
+      case Step.CONFIRMATION:
+        return <BookingConfirmation />;
+      default:
+        return null;
     }
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Flight Booking</h1>
+    <BookingContext.Provider value={{ state, dispatch }}>
+      <div className="w-full max-w-2xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6">Flight & Hotel Booking</h1>
+        {renderStep()}
+      </div>
+    </BookingContext.Provider>
+  );
+}
 
-      {view === 'search' ? (
-        <>
-          <BookingForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
-          {isError && (
-            <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
-              An error occurred while searching for flights. Please try again.
-            </div>
-          )}
-        </>
-      ) : (
-        <SearchResults
-          flightOptions={flightOptions}
-          passengers={searchParams?.passengers || 1}
-          onBack={() => setView('search')}
-          isLoading={isSubmitting}
-        />
-      )}
-    </div>
+export default function Page() {
+  return (
+    <QueryClientProvider client={new QueryClient()}>
+      <BookingFlow />
+    </QueryClientProvider>
   );
 }

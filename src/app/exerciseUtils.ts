@@ -1,5 +1,9 @@
-'use client';
-import { FlightOption } from './page';
+export interface FlightOption {
+  id: string;
+  airline: string;
+  price: number;
+  duration: string;
+}
 
 export async function getFlightOptions(query: {
   destination: string;

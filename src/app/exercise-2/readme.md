@@ -1,0 +1,5 @@
+- get rid of derived state
+- combine related states into single objects
+- remove redundant selectedFlight state - use id instead
+- bonus: use FormData and Zod to validate the form data
+- bonus: use type states

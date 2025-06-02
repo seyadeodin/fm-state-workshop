@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useEffect, useState } from 'react';
-import { getFlightOptions } from './getFlightOptions';
+import { getFlightOptions } from '@/app/exerciseUtils';
 
 const enum FormState {
   IDLE = 'IDLE',
@@ -43,6 +43,7 @@ function FlightBooking() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setFormState(FormState.SUBMITTING);
     setSelectedFlight(null);
 

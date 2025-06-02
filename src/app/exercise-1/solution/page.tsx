@@ -4,14 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-import { getFlightOptions } from '../getFlightOptions';
-
-export interface FlightOption {
-  id: string;
-  airline: string;
-  price: number;
-  duration: string;
-}
+import { FlightOption, getFlightOptions } from '@/app/exerciseUtils';
 
 const enum FormState {
   IDLE = 'IDLE',
@@ -29,6 +22,8 @@ function FlightBooking() {
   const [flightOptions, setFlightOptions] = useState<FlightOption[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    if (formState === FormState.SUBMITTING) return;
+
     e.preventDefault();
     setFormState(FormState.SUBMITTING);
 

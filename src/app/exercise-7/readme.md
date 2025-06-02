@@ -1,0 +1,1 @@
+- using tanstack query to fetch data

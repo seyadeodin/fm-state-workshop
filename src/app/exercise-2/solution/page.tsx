@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useState } from 'react';
-import { getFlightOptions } from '../getFlightOptions';
+import { getFlightOptions } from '@/app/exerciseUtils';
 
 const enum FormStatus {
   IDLE = 'IDLE',
@@ -32,7 +32,7 @@ interface FormData {
 
 interface FlightState {
   flightOptions: FlightOption[];
-  selectedFlight: FlightOption | null;
+  selectedFlightId: string | null;
 }
 
 const initialFormData: FormData = {
@@ -45,7 +45,7 @@ const initialFormData: FormData = {
 
 const initialFlightState: FlightState = {
   flightOptions: [],
-  selectedFlight: null,
+  selectedFlightId: null,
 };
 
 function FlightBooking() {
@@ -55,14 +55,17 @@ function FlightBooking() {
   const [status, setStatus] = useState<FormStatus>(FormStatus.IDLE);
 
   // Derived state
-  const totalPrice = flightState.selectedFlight
-    ? flightState.selectedFlight.price * formData.passengers
+  const selectedFlight = flightState.flightOptions.find(
+    (flight) => flight.id === flightState.selectedFlightId
+  );
+  const totalPrice = selectedFlight
+    ? selectedFlight.price * formData.passengers
     : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus(FormStatus.SUBMITTING);
-    setFlightState((prev) => ({ ...prev, selectedFlight: null }));
+    setFlightState((prev) => ({ ...prev, selectedFlightId: null }));
 
     try {
       const flights = await getFlightOptions({
@@ -80,7 +83,7 @@ function FlightBooking() {
   };
 
   const handleFlightSelect = (flight: FlightOption) => {
-    setFlightState((prev) => ({ ...prev, selectedFlight: flight }));
+    setFlightState((prev) => ({ ...prev, selectedFlightId: flight.id }));
     setStatus(FormStatus.SELECTED);
   };
 
@@ -191,7 +194,7 @@ function FlightBooking() {
                 <div
                   key={flight.id}
                   className={`p-4 border rounded hover:shadow-md ${
-                    flightState.selectedFlight?.id === flight.id
+                    flightState.selectedFlightId === flight.id
                       ? 'border-blue-500 bg-blue-50'
                       : ''
                   }`}
@@ -209,7 +212,7 @@ function FlightBooking() {
                         className="mt-2 bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600"
                         onClick={() => handleFlightSelect(flight)}
                       >
-                        {flightState.selectedFlight?.id === flight.id
+                        {flightState.selectedFlightId === flight.id
                           ? 'Selected'
                           : 'Select'}
                       </Button>
@@ -221,12 +224,12 @@ function FlightBooking() {
           </div>
         )}
 
-      {status === FormStatus.SELECTED && flightState.selectedFlight && (
+      {status === FormStatus.SELECTED && flightState.selectedFlightId && (
         <div className="mt-8 p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Booking Summary</h3>
           <div className="space-y-2">
-            <p>Flight: {flightState.selectedFlight.airline}</p>
-            <p>Duration: {flightState.selectedFlight.duration}</p>
+            <p>Flight: {selectedFlight?.airline}</p>
+            <p>Duration: {selectedFlight?.duration}</p>
             <p>Passengers: {formData.passengers}</p>
             <p className="text-xl font-bold mt-4">Total: ${totalPrice}</p>
           </div>
