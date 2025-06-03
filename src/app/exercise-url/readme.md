@@ -39,66 +39,6 @@
   - Built-in validation
   - Custom parsers for complex types
 
-**Core API**:
-
-```tsx
-const [value, setValue] = useQueryState('paramName', options);
-```
-
-**Parser options**:
-
-- `parse`: Function to convert string to your type
-- `serialize`: Function to convert your type to string
-- `defaultValue`: Default when param is missing
-- `shallow`: Control Next.js router behavior
-
-**Before (Anti-pattern):**
-
-```tsx
-function SearchForm() {
-  const [query, setQuery] = useState(''); // ❌ Lost on refresh
-  const [category, setCategory] = useState('all'); // ❌ Not shareable
-  const [sortBy, setSortBy] = useState('date'); // ❌ No deep linking
-
-  return (
-    <form>
-      <input value={query} onChange={(e) => setQuery(e.target.value)} />
-      <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        <option value="all">All</option>
-        <option value="books">Books</option>
-      </select>
-    </form>
-  );
-}
-```
-
-**After (Best practice):**
-
-```tsx
-function SearchForm() {
-  // ✅ State persists in URL and is shareable
-  const [query, setQuery] = useQueryState('q');
-  const [category, setCategory] = useQueryState('category', {
-    defaultValue: 'all',
-  });
-  const [sortBy, setSortBy] = useQueryState('sort', {
-    parse: (value) => (value === 'price' ? 'price' : 'date'),
-    serialize: (value) => value,
-    defaultValue: 'date',
-  });
-
-  return (
-    <form>
-      <input value={query || ''} onChange={(e) => setQuery(e.target.value)} />
-      <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        <option value="all">All</option>
-        <option value="books">Books</option>
-      </select>
-    </form>
-  );
-}
-```
-
 ---
 
 ## Exercise: Convert Form State to URL Query Parameters
@@ -122,29 +62,6 @@ Convert the booking form to use `useQueryState` from the `nuqs` library so that:
 2. **Shareable searches**: Users can copy the URL and share their search criteria
 3. **Bookmark-friendly**: Specific searches can be bookmarked and restored
 4. **Navigation-aware**: Browser back/forward buttons work naturally with form state
-
-### Implementation Steps:
-
-1. **Replace useState with useQueryState** for all form fields:
-
-   - `destination` (string)
-   - `departure` (date string)
-   - `arrival` (date string)
-   - `passengers` (number)
-   - `isOneWay` (boolean)
-
-2. **Add proper parsers** for each field type:
-
-   - String fields can use default behavior
-   - Number fields need parse/serialize functions
-   - Boolean fields need proper conversion
-   - Date fields need validation
-
-3. **Test the implementation**:
-   - Fill out the form and copy the URL
-   - Refresh the page - form should retain values
-   - Share the URL with someone else
-   - Use browser back/forward buttons
 
 ### Success Criteria:
 

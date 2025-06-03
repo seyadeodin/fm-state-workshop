@@ -627,9 +627,11 @@ function BookingFlow() {
   );
 }
 
+const queryClient = new QueryClient();
+
 export default function Page() {
   return (
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <BookingFlow />
     </QueryClientProvider>
   );

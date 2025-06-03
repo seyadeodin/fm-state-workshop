@@ -116,9 +116,9 @@ interface NormalizedState {
 
 ### Bonus Challenges:
 
+- **Focus the destination input** - When a new destination is added, focus the input
 - **Implement undo and redo** - Add history tracking to enable undoing and redoing actions
 - **Use a 3rd party library** - Replace useReducer with a state management library like Zustand or Redux Toolkit that provides normalization helpers
-- **Add search functionality** - Implement global todo search across all destinations
 - **Bulk operations** - Add ability to select and delete multiple todos
 
 ### Success Criteria:

@@ -19,44 +19,57 @@
 
 ```tsx
 // ❌ Anti-pattern: useEffect + useState for external data
-function FlightDashboard() {
-  const [flights, setFlights] = useState([]);
+function NetworkStatus() {
+  const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    // Subscribe to external store
-    const unsubscribe = flightStore.subscribe((newFlights) => {
-      setFlights(newFlights);
-    });
+    // Subscribe to online/offline events
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
 
-    // Set initial data
-    setFlights(flightStore.getFlights());
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
-    return unsubscribe;
+    // Set initial status
+    setIsOnline(navigator.onLine);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
-  return <div>{/* render flights */}</div>;
+  return <div>{isOnline ? '🟢 Online' : '🔴 Offline'}</div>;
 }
 ```
 
 **Problems with this approach:**
 
-- **Race conditions**: Initial data and subscription updates can get out of sync
-- **Hydration mismatches**: Server and client might show different data
+- **Race conditions**: Initial status and event updates can get out of sync
+- **Hydration mismatches**: Server assumes online, client might be offline
 - **Performance**: Extra re-renders during initial setup
-- **Complexity**: Manual subscription management and cleanup
+- **Complexity**: Manual event listener management and cleanup
 
 **After (Best practice):**
 
 ```tsx
 // ✅ Best practice: useSyncExternalStore
-function FlightDashboard() {
-  const flights = useSyncExternalStore(
-    flightStore.subscribe, // Subscribe function
-    flightStore.getSnapshot, // Get current snapshot
-    flightStore.getSnapshot // Get server snapshot (optional)
+function NetworkStatus() {
+  const isOnline = useSyncExternalStore(
+    (callback) => {
+      // Subscribe function
+      window.addEventListener('online', callback);
+      window.addEventListener('offline', callback);
+      return () => {
+        window.removeEventListener('online', callback);
+        window.removeEventListener('offline', callback);
+      };
+    },
+    () => navigator.onLine, // Get current snapshot (client)
+    () => true // Get server snapshot (assume online)
   );
 
-  return <div>{/* render flights */}</div>;
+  return <div>{isOnline ? '🟢 Online' : '🔴 Offline'}</div>;
 }
 ```
 
@@ -64,7 +77,7 @@ function FlightDashboard() {
 
 - **Atomic updates**: Guarantees consistency between subscription and snapshot
 - **Hydration safety**: Handles server/client differences gracefully
-- **Automatic cleanup**: No manual subscription management needed
+- **Automatic cleanup**: No manual event listener management needed
 - **Performance optimized**: Minimal re-renders and efficient updates
 
 ## When to Use useSyncExternalStore
@@ -99,23 +112,23 @@ This prevents hydration mismatches where the server renders one thing and the cl
 
 ---
 
-## Exercise: Sync with External Flight Store
+## Exercise: Sync with Browser's Network Status
 
-**Goal**: Replace `useEffect` + `useState` with `useSyncExternalStore` for external data
+**Goal**: Replace `useEffect` + `useState` with `useSyncExternalStore` for network status detection
 
-You have a flight dashboard that currently uses the manual `useEffect` + `useState` pattern to sync with an external flight store. This approach has timing issues and doesn't handle hydration properly.
+You have a network status indicator that currently uses the manual `useEffect` + `useState` pattern to sync with the browser's online/offline events. This approach has timing issues and doesn't handle hydration properly.
 
 ### Your Task:
 
 1. **Refactor from useEffect + useState** to `useSyncExternalStore` in `page.tsx`
-2. **Connect to the FlightStore** using the proper subscription pattern
-3. **Handle real-time updates** as the flight data changes every second
-4. **Bonus**: Derive additional metrics like average flight delay
+2. **Connect to browser's network events** using the proper subscription pattern
+3. **Handle real-time updates** when the user goes online/offline
+4. **Bonus**: Create additional network-related indicators (connection type, speed, etc.)
 
 ### Success Criteria:
 
-- No more manual `useEffect` + `useState` patterns for external data
-- Flight data updates automatically when store changes
+- No more manual `useEffect` + `useState` patterns for network status
+- Network status updates automatically when browser goes online/offline
 - No hydration mismatches between server and client
 - Performance is optimized with minimal re-renders
 - Code is cleaner and more maintainable

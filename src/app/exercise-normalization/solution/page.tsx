@@ -15,13 +15,13 @@ import { Trash2, Plus, MapPin, CheckSquare } from 'lucide-react';
 
 // Types
 interface TodoItem {
-  id: string;
+  id: TodoId;
   text: string;
-  destinationId: string;
+  destinationId: DestinationId;
 }
 
 interface Destination {
-  id: string;
+  id: DestinationId;
   name: string;
 }
 
@@ -32,13 +32,19 @@ interface ItineraryState {
   undos: Action[];
 }
 
+type Brand<B> = string & { __brand: B };
+
+type DestinationId = Brand<'DestinationId'>;
+
+type TodoId = Brand<'TodoId'>;
+
 // Action types
 type Action =
   | { type: 'ADD_DESTINATION'; id: string }
-  | { type: 'UPDATE_DESTINATION'; destinationId: string; name: string }
-  | { type: 'DELETE_DESTINATION'; destinationId: string }
-  | { type: 'ADD_TODO'; id: string; destinationId: string; text: string }
-  | { type: 'DELETE_TODO'; destinationId: string; todoId: string }
+  | { type: 'UPDATE_DESTINATION'; destinationId: DestinationId; name: string }
+  | { type: 'DELETE_DESTINATION'; destinationId: DestinationId }
+  | { type: 'ADD_TODO'; id: string; destinationId: DestinationId; text: string }
+  | { type: 'DELETE_TODO'; todoId: TodoId }
   | { type: 'UNDO' }
   | { type: 'REDO' };
 
@@ -68,8 +74,6 @@ function itineraryReducer(
       }
     }
 
-    console.log('undoneState', undoneState, { events, undos });
-
     return {
       ...undoneState,
       events,
@@ -95,7 +99,10 @@ function itineraryReducer(
         ...state,
         events,
         undos: [],
-        destinations: [...state.destinations, { id: action.id, name: '' }],
+        destinations: [
+          ...state.destinations,
+          { id: action.id as DestinationId, name: '' },
+        ],
       };
     case 'UPDATE_DESTINATION':
       return {
@@ -125,7 +132,7 @@ function itineraryReducer(
         todos: [
           ...state.todos,
           {
-            id: crypto.randomUUID(),
+            id: crypto.randomUUID() as TodoId,
             text: action.text,
             destinationId: action.destinationId,
           },
@@ -154,8 +161,6 @@ export default function ItineraryPage() {
       lastInputRef.current?.focus();
     }, 0);
   };
-
-  console.log('state', state);
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
@@ -215,7 +220,6 @@ export default function ItineraryPage() {
                 onDeleteTodo={(todoId) => {
                   dispatch({
                     type: 'DELETE_TODO',
-                    destinationId: todoId,
                     todoId,
                   });
                 }}
@@ -257,8 +261,8 @@ function DestinationCard({
   todos: TodoItem[];
   onUpdate: (destination: Destination) => void;
   onDelete: (destination: Destination) => void;
-  onAddTodo: (data: { destinationId: string; text: string }) => void;
-  onDeleteTodo: (todoId: string) => void;
+  onAddTodo: (data: { destinationId: DestinationId; text: string }) => void;
+  onDeleteTodo: (todoId: TodoId) => void;
 }) {
   return (
     <Card key={destination.id} className="relative">

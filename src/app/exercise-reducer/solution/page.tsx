@@ -259,7 +259,12 @@ function BookingForm({
 const BookingContext = createContext<{
   state: BookingState;
   dispatch: (event: BookingEvent) => void;
-}>(null as any);
+}>(
+  null as unknown as {
+    state: BookingState;
+    dispatch: (event: BookingEvent) => void;
+  }
+);
 
 const BookingProvider = ({ children }: { children: ReactNode }) => {
   const [bookingState, dispatch] = useReducer(
