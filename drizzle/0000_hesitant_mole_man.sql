@@ -11,18 +11,6 @@ CREATE TABLE `activities` (
 	FOREIGN KEY (`destination_id`) REFERENCES `destinations`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `bookings` (
-	`id` text PRIMARY KEY NOT NULL,
-	`itinerary_id` text NOT NULL,
-	`destination_id` text NOT NULL,
-	`type` text NOT NULL,
-	`reference_id` text NOT NULL,
-	`status` text NOT NULL,
-	`created_at` text DEFAULT CURRENT_TIMESTAMP,
-	FOREIGN KEY (`itinerary_id`) REFERENCES `itineraries`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`destination_id`) REFERENCES `destinations`(`id`) ON UPDATE no action ON DELETE cascade
-);
---> statement-breakpoint
 CREATE TABLE `comments` (
 	`id` text PRIMARY KEY NOT NULL,
 	`itinerary_id` text NOT NULL,
@@ -39,11 +27,12 @@ CREATE TABLE `destinations` (
 	`arrival_date` text NOT NULL,
 	`departure_date` text NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
+	`status` text DEFAULT 'draft' NOT NULL,
 	FOREIGN KEY (`itinerary_id`) REFERENCES `itineraries`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `flight_bookings` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
 	`destination_id` text NOT NULL,
 	`airline` text NOT NULL,
 	`price` integer NOT NULL,
@@ -54,7 +43,7 @@ CREATE TABLE `flight_bookings` (
 );
 --> statement-breakpoint
 CREATE TABLE `hotel_bookings` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
 	`destination_id` text NOT NULL,
 	`name` text NOT NULL,
 	`price` integer NOT NULL,

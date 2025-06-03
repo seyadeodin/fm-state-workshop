@@ -66,7 +66,62 @@ const AppContext = createContext({
 - Difficult to test state transitions in isolation
 - No single source of truth for complex state operations
 
+### Stores vs. Atoms
+
+**Store-based solutions** (Zustand, Redux Toolkit, XState Store) use a **centralized approach** - all state lives in one or few stores.
+
+**Atomic solutions** (Jotai, Recoil, XState Store) use a **distributed approach** - state is broken into independent atoms that can be composed.
+
+**Choose stores when you have:**
+
+- **Complex state relationships** - Many pieces of state depend on each other
+- **Clear data flow requirements** - You need predictable, traceable state updates
+- **Team coordination needs** - Multiple developers working on shared state logic
+
+**Store benefits:**
+
+- Single source of truth
+- Excellent debugging with dev tools
+- Clear separation of business logic
+- Predictable state updates
+- Great TypeScript support
+
+**Choose atoms when you have:**
+
+- **External state** - State is updated from an external source
+- **Independent pieces of state** - Most state doesn't depend on other state
+- **Component-specific concerns** - State is primarily tied to specific UI components
+- **Performance-critical applications** - Need fine-grained subscriptions
+
+**Atomic benefits:**
+
+- Automatic optimization and caching
+- Excellent performance with selective rendering
+- Highly composable and reusable
+- Bottom-up architecture flexibility
+- Natural code splitting
+
+You can also combine both approaches:
+
+- Use **stores** for core business logic and complex workflows
+- Use **atoms** for UI-specific state and independent pieces of data
+
+```tsx
+// Core business logic in store
+const useBookingStore = create<BookingStore>(...);
+
+// UI-specific state as atoms
+const themeAtom = atom<'light' | 'dark'>('light');
+const sidebarOpenAtom = atom<boolean>(false);
+```
+
 ### External State Management Solutions
+
+- [XState Store](https://stately.ai/docs/xstate-store)
+- [Zustand](https://zustand-demo.pmnd.rs/)
+- [Jotai](https://jotai.org/)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
+- And more!
 
 ---
 
@@ -84,11 +139,6 @@ You have a multi-step booking flow that currently uses local component state and
 ### Your Task: Choose Your Adventure!
 
 Convert the booking application to use an external state management library of your choice.
-
-- [XState Store](https://stately.ai/docs/xstate-store)
-- [Zustand](https://zustand-demo.pmnd.rs/)
-- [Jotai](https://jotai.org/)
-- [Redux Toolkit](https://redux-toolkit.js.org/)
 
 ### Implementation Steps:
 

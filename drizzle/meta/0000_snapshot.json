@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "e5330a7f-795b-419c-9447-cdc062d280a7",
+  "id": "32268f2e-77c8-4e9b-b650-8eb556a10760",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "activities": {
@@ -83,93 +83,6 @@
         "activities_destination_id_destinations_id_fk": {
           "name": "activities_destination_id_destinations_id_fk",
           "tableFrom": "activities",
-          "tableTo": "destinations",
-          "columnsFrom": [
-            "destination_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "bookings": {
-      "name": "bookings",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "itinerary_id": {
-          "name": "itinerary_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "destination_id": {
-          "name": "destination_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "reference_id": {
-          "name": "reference_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "bookings_itinerary_id_itineraries_id_fk": {
-          "name": "bookings_itinerary_id_itineraries_id_fk",
-          "tableFrom": "bookings",
-          "tableTo": "itineraries",
-          "columnsFrom": [
-            "itinerary_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "bookings_destination_id_destinations_id_fk": {
-          "name": "bookings_destination_id_destinations_id_fk",
-          "tableFrom": "bookings",
           "tableTo": "destinations",
           "columnsFrom": [
             "destination_id"
@@ -290,6 +203,14 @@
           "notNull": false,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'draft'"
         }
       },
       "indexes": {},
@@ -317,10 +238,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "destination_id": {
           "name": "destination_id",
@@ -391,10 +312,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "destination_id": {
           "name": "destination_id",

@@ -1,1 +1,0 @@
-ALTER TABLE `destinations` ADD `status` text DEFAULT 'draft' NOT NULL;

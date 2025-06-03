@@ -2,7 +2,7 @@
 
 ## Core Concepts
 
-### useSyncExternalStore for External Data Sources
+### `useSyncExternalStore` for External Data Sources
 
 - **Rule**: Use `useSyncExternalStore` for subscribing to external stores and data sources
 - **Anti-pattern**: Using `useEffect` + `useState` for external data synchronization
@@ -111,21 +111,6 @@ You have a flight dashboard that currently uses the manual `useEffect` + `useSta
 2. **Connect to the FlightStore** using the proper subscription pattern
 3. **Handle real-time updates** as the flight data changes every 5 seconds
 4. **Bonus**: Derive additional metrics like average delay and total delayed flights
-
-### Setup:
-
-The `FlightStore` is already set up with:
-
-- `subscribe(callback)` - Subscribe to changes
-- `getSnapshot()` - Get current flight data
-- Automatic updates every 5 seconds with realistic flight status changes
-
-### Key Learning Points:
-
-- How `useSyncExternalStore` eliminates common async state bugs
-- Why it's superior to `useEffect` + `useState` for external data
-- How to build reusable custom hooks with external stores
-- Understanding the three parameters: subscribe, getSnapshot, and getServerSnapshot
 
 ### Success Criteria:
 

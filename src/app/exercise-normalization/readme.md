@@ -114,18 +114,6 @@ interface NormalizedState {
 }
 ```
 
-### Implementation Steps:
-
-1. **Split destination into a separate component** - Create a `DestinationCard` component to encapsulate destination logic and make the code more modular
-
-2. **Normalize the state structure** - Replace nested arrays with flat objects using IDs as keys
-
-3. **Update all reducer actions** - Simplify CRUD operations to work with normalized data
-
-4. **Update component logic** - Use ID references to connect destinations and todos
-
-5. **Test functionality** - Ensure all features work with the new structure
-
 ### Bonus Challenges:
 
 - **Implement undo and redo** - Add history tracking to enable undoing and redoing actions
