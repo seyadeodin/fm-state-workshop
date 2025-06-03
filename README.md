@@ -46,12 +46,12 @@ pnpm test
 - [Exercise: Antipatterns](http://localhost:3000/exercise-antipatterns) - Common state management mistakes
 - [Exercise: Diagrams](http://localhost:3000/exercise-diagrams) - State visualization techniques
 - [Exercise: Finite states](http://localhost:3000/exercise-finite) - Combining state patterns
-- [Exercise: Reducers](http://localhost:3000/exercise-reducer) - Building with useReducer
+- [Exercise: Reducers](http://localhost:3000/exercise-reducer) - Building with `useReducer`
 - [Exercise: Forms](http://localhost:3000/exercise-form) - Form handling
 - [Exercise: URL](http://localhost:3000/exercise-url) - URL state synchronization
 - [Exercise: Fetch](http://localhost:3000/exercise-fetch) - Data fetching patterns
 - [Exercise: Effects](http://localhost:3000/exercise-effects) - Refactoring cascading `useEffect`s
-- [Exercise: Sync](http://localhost:3000/exercise-sync) - Synchronization patterns
+- [Exercise: Sync](http://localhost:3000/exercise-sync) - Synchronization patterns with `useSyncExternalStore`
 - [Exercise: Test](http://localhost:3000/exercise-test) - Testing state management
 - [Exercise: Normalization](http://localhost:3000/exercise-normalization) - Data normalization
 - [Exercise: Libraries](http://localhost:3000/exercise-libraries) - State management libraries

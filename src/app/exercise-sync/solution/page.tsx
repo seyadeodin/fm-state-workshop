@@ -12,7 +12,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Plane, Clock, MapPin } from 'lucide-react';
-import { FlightStatus, FlightStore } from '../FlightStore';
+import { Flight, FlightStatus, FlightStore } from '../FlightStore';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const flightStore = new FlightStore();
 
@@ -45,15 +46,31 @@ function getStatusColor(status: FlightStatus) {
 export default function FlightStatusDashboard() {
   const flights = useFlights();
 
+  const delayedFlights = flights.filter(
+    (flight): flight is Flight & { delay: number } => flight.delay !== undefined
+  );
+  const averageDelay =
+    delayedFlights.reduce((acc, flight) => acc + flight.delay, 0) /
+    delayedFlights.length;
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold mb-2">✈️ Flight Status Dashboard</h1>
         <p className="text-muted-foreground">
           Real-time flight updates using useSyncExternalStore - automatic
-          updates every 5 seconds
+          updates every second
         </p>
       </div>
+
+      {delayedFlights.length > 0 && (
+        <Alert variant="destructive">
+          <AlertTitle>{delayedFlights.length} flights are delayed</AlertTitle>
+          <AlertDescription>
+            Average delay: {averageDelay} minutes.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Flight Table */}
       <Card>

@@ -5,7 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useState, useEffect } from 'react';
-import { useQueryState } from 'nuqs';
+import {
+  parseAsBoolean,
+  parseAsInteger,
+  parseAsStringEnum,
+  useQueryState,
+} from 'nuqs';
 
 interface Layover {
   city: string;
@@ -69,18 +74,18 @@ function SearchResults({
   const [selectedFlight, setSelectedFlight] = useState<FlightOption | null>(
     null
   );
-  const [showDirectOnly, setShowDirectOnly] = useQueryState('directOnly', {
-    parse: (value) => value === 'true',
-    serialize: (value) => value.toString(),
-  });
-  const [sortBy, setSortBy] = useQueryState('sortBy', {
-    parse: (value) => (value === 'duration' ? 'duration' : 'price'),
-    serialize: (value) => value,
-  });
-  const [sortOrder, setSortOrder] = useQueryState('sortOrder', {
-    parse: (value) => (value === 'desc' ? 'desc' : 'asc'),
-    serialize: (value) => value,
-  });
+  const [showDirectOnly, setShowDirectOnly] = useQueryState(
+    'directOnly',
+    parseAsBoolean.withDefault(false)
+  );
+  const [sortBy, setSortBy] = useQueryState(
+    'sortBy',
+    parseAsStringEnum(['price', 'duration']).withDefault('price')
+  );
+  const [sortOrder, setSortOrder] = useQueryState(
+    'sortOrder',
+    parseAsStringEnum(['asc', 'desc']).withDefault('asc')
+  );
   const totalPrice = selectedFlight ? selectedFlight.price * passengers : 0;
 
   const filteredFlights = flightOptions
@@ -215,14 +220,14 @@ function BookingForm({
   const [destination, setDestination] = useQueryState('destination');
   const [departure, setDeparture] = useQueryState('departure');
   const [arrival, setArrival] = useQueryState('arrival');
-  const [passengers, setPassengers] = useQueryState('passengers', {
-    parse: (value) => parseInt(value) || 1,
-    serialize: (value) => value.toString(),
-  });
-  const [isOneWay, setIsOneWay] = useQueryState('isOneWay', {
-    parse: (value) => value === 'true',
-    serialize: (value) => value.toString(),
-  });
+  const [passengers, setPassengers] = useQueryState(
+    'passengers',
+    parseAsInteger.withDefault(1)
+  );
+  const [isOneWay, setIsOneWay] = useQueryState(
+    'isOneWay',
+    parseAsBoolean.withDefault(false)
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

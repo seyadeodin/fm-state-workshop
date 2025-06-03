@@ -50,7 +50,7 @@ const initialState: BookingState = {
   error: null,
 };
 
-function reducer(state: BookingState, action: Action): BookingState {
+function tripSearchReducer(state: BookingState, action: Action): BookingState {
   switch (action.type) {
     case 'inputUpdated':
       const inputs = {
@@ -89,7 +89,7 @@ function reducer(state: BookingState, action: Action): BookingState {
 }
 
 export default function TripSearch() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(tripSearchReducer, initialState);
 
   useEffect(() => {
     const { destination, startDate, endDate } = state.inputs;

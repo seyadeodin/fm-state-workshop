@@ -1,5 +1,7 @@
 import { test, expect } from 'vitest';
+import { initialState, bookingReducer, Step } from './bookingFlow';
 
 test('should be able to book a flight', () => {
-  expect(true).toBe(true);
+  const state = bookingReducer(initialState, { type: 'searchFlights' });
+  expect(state.currentStep).toBe(Step.FlightResults);
 });

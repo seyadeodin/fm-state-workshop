@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -17,15 +17,11 @@ import { FlightStatus, FlightStore } from './FlightStore';
 const flightStore = new FlightStore();
 
 function useFlights() {
-  const [flights, setFlights] = useState(() => flightStore.getSnapshot());
-
-  useEffect(() => {
-    const unsubscribe = flightStore.subscribe(() => {
-      setFlights(flightStore.getSnapshot());
-    });
-
-    return unsubscribe;
-  }, []);
+  const flights = useSyncExternalStore(
+    flightStore.subscribe,
+    flightStore.getSnapshot,
+    flightStore.getSnapshot
+  );
 
   return flights;
 }
@@ -57,7 +53,7 @@ export default function FlightStatusDashboard() {
         <h1 className="text-3xl font-bold mb-2">✈️ Flight Status Dashboard</h1>
         <p className="text-muted-foreground">
           Real-time flight updates using useSyncExternalStore - automatic
-          updates every 5 seconds
+          updates every second
         </p>
       </div>
 

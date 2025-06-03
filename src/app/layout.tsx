@@ -55,7 +55,7 @@ export default function RootLayout({
                 <div className="flex items-center gap-9">
                   <Link
                     className="text-[#121416] dark:text-white text-sm font-medium leading-normal"
-                    href="/itinerary"
+                    href="/itineraries"
                   >
                     Itineraries
                   </Link>

@@ -109,8 +109,8 @@ You have a flight dashboard that currently uses the manual `useEffect` + `useSta
 
 1. **Refactor from useEffect + useState** to `useSyncExternalStore` in `page.tsx`
 2. **Connect to the FlightStore** using the proper subscription pattern
-3. **Handle real-time updates** as the flight data changes every 5 seconds
-4. **Bonus**: Derive additional metrics like average delay and total delayed flights
+3. **Handle real-time updates** as the flight data changes every second
+4. **Bonus**: Derive additional metrics like average flight delay
 
 ### Success Criteria:
 
