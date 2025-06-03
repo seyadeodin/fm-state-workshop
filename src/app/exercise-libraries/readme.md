@@ -68,96 +68,6 @@ const AppContext = createContext({
 
 ### External State Management Solutions
 
-### Redux - Predictable State Container
-
-- **Best for**: Large applications with complex state logic
-- **Benefits**:
-  - Single source of truth: All state in one store
-  - Immutable updates: Predictable state changes via reducers
-  - Time-travel debugging: Excellent DevTools
-  - Middleware ecosystem: Side effects, persistence, etc.
-
-### Zustand - Lightweight and Flexible
-
-- **Best for**: Medium applications that need flexibility
-- **Benefits**:
-  - Minimal boilerplate: Simple API with less ceremony
-  - Framework agnostic: Works beyond React
-  - TypeScript-first: Excellent type inference
-  - Selective subscriptions: Components only re-render when needed
-
-### Jotai - Atomic State Management
-
-- **Best for**: Applications with many independent state pieces
-- **Benefits**:
-  - Bottom-up approach: Compose state from atoms
-  - Automatic dependency tracking: No manual subscriptions
-  - Concurrent-safe: Works with React 18 features
-
-### XState Store - Event-Driven State Management
-
-- **Best for**: Applications that benefit from explicit state transitions
-- **Benefits**:
-  - Event-driven architecture: State changes via explicit events
-  - Predictable transitions: Clear separation of state and actions
-  - Framework integration: Works seamlessly with React, Vue, etc.
-  - Type safety: Excellent TypeScript support
-
-## XState Store: Event-Driven State Management
-
-XState Store brings the power of event-driven architecture to simple state management. Based on the battle-tested XState library, it provides a lightweight solution for managing application state through explicit events.
-
-### Key Benefits:
-
-#### **1. Event-Driven Architecture**
-
-```tsx
-// ✅ Clear intent through events
-store.trigger.userLoggedIn({ user });
-store.trigger.cartItemAdded({ productId, quantity });
-store.trigger.notificationDismissed({ id });
-```
-
-#### **2. Predictable State Updates**
-
-```tsx
-const store = createStore({
-  context: { count: 0 },
-  on: {
-    increment: (context) => ({ ...context, count: context.count + 1 }),
-    decrement: (context) => ({ ...context, count: context.count - 1 }),
-    reset: (context) => ({ ...context, count: 0 }),
-  },
-});
-```
-
-#### **3. React Integration**
-
-```tsx
-import { useSelector } from '@xstate/store/react';
-
-function Counter() {
-  const count = useSelector(store, (state) => state.context.count);
-
-  return (
-    <div>
-      <span>{count}</span>
-      <button onClick={() => store.trigger.increment()}>+</button>
-    </div>
-  );
-}
-```
-
-#### **4. Selective Subscriptions**
-
-```tsx
-// Only re-renders when user data changes
-const user = useSelector(store, (state) => state.context.user);
-
-// Only re-renders when cart count changes
-const cartCount = useSelector(store, (state) => state.context.cart.length);
-```
-
 ---
 
 ## Exercise: Convert to External State Management
@@ -173,28 +83,12 @@ You have a multi-step booking flow that currently uses local component state and
 
 ### Your Task: Choose Your Adventure!
 
-Convert the booking application to use **one** of the following external state management libraries:
+Convert the booking application to use an external state management library of your choice.
 
-#### Option 1: XState Store (Recommended)
-
-- Event-driven state management
-- Excellent TypeScript support
-- Clear state transitions
-- Built-in side effects handling
-
-#### Option 2: Zustand
-
-- Minimal boilerplate
-- Simple API
-- Good TypeScript support
-- Flexible and lightweight
-
-#### Option 3: Redux Toolkit
-
-- Industry standard
-- Excellent DevTools
-- Predictable state updates
-- Large ecosystem
+- [XState Store](https://stately.ai/docs/xstate-store)
+- [Zustand](https://zustand-demo.pmnd.rs/)
+- [Jotai](https://jotai.org/)
+- [Redux Toolkit](https://redux-toolkit.js.org/)
 
 ### Implementation Steps:
 

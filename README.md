@@ -48,10 +48,10 @@ pnpm test
 - [Exercise: Finite states](http://localhost:3000/exercise-finite) - Combining state patterns
 - [Exercise: Reducers](http://localhost:3000/exercise-reducer) - Building with useReducer
 - [Exercise: Forms](http://localhost:3000/exercise-form) - Form handling
-- [Exercise: Effects](http://localhost:3000/exercise-effects) - Managing side effects
-- [Exercise: Sync](http://localhost:3000/exercise-sync) - Synchronization patterns
-- [Exercise: Fetch](http://localhost:3000/exercise-fetch) - Data fetching patterns
 - [Exercise: URL](http://localhost:3000/exercise-url) - URL state synchronization
+- [Exercise: Fetch](http://localhost:3000/exercise-fetch) - Data fetching patterns
+- [Exercise: Effects](http://localhost:3000/exercise-effects) - Refactoring cascading `useEffect`s
+- [Exercise: Sync](http://localhost:3000/exercise-sync) - Synchronization patterns
 - [Exercise: Test](http://localhost:3000/exercise-test) - Testing state management
 - [Exercise: Normalization](http://localhost:3000/exercise-normalization) - Data normalization
 - [Exercise: Libraries](http://localhost:3000/exercise-libraries) - State management libraries
