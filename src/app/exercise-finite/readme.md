@@ -2,7 +2,7 @@
 
 ## Principles
 
-### Events are the source of truth
+### Events are the real source of truth
 
 - **Rule**: Capture user intent and business logic through events, not direct state mutations
 - **Anti-pattern**: Directly setting state values without expressing the underlying reason
@@ -28,23 +28,12 @@
 
 - **Rule**: Write code as if you're going to change frameworks or languages
 - **Anti-pattern**: Tightly coupling business logic to React-specific patterns
-- **Best practice**: Use the "ports and adapters" approach to separate concerns
+- **Best practice**: Separate concerns
 - **Benefits**:
   - Maintainable systems that evolve independently of framework choices
   - Easier migration between frameworks
   - Better testability of core logic
   - More organized and modular codebase
-
-### Normalize state
-
-- **Rule**: Flatten data structures and use IDs for relationships
-- **Anti-pattern**: Deep nesting creates complex dependencies and update patterns
-- **Best practice**: Store entities in separate collections with ID references
-- **Benefits**:
-  - Easier to manage and update data
-  - Avoid redundancy and ensure consistency
-  - Better performance with O(1) lookups
-  - Simpler update logic
 
 ### State machines for modeling
 
