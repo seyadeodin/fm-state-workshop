@@ -1,9 +1,13 @@
-## Deriving state
+# React State Anti-patterns
 
-- If you can calculate (derive) it, don't store it
+## Core Concepts
+
+### Deriving State
+
+- **Rule**: If you can calculate (derive) it, don't store it
 - **Anti-pattern**: Using `useState` + `useEffect` to sync derived data
 - **Best practice**: Calculate derived values directly in render or with `useMemo`
-- Why?
+- **Benefits**:
   - Eliminates synchronization bugs
   - Reduces state complexity
   - Automatically stays in sync with source data
@@ -48,9 +52,9 @@ function TripSummary() {
 }
 ```
 
-## Refs
+### Refs vs State
 
-- Use `useRef` for values that don't affect rendering
+- **Rule**: Use `useRef` for values that don't affect rendering
 - **Anti-pattern**: Using `useState` for mutable values that don't need re-renders
 - **Best practice**: `useRef` for DOM references, timers, counters, previous values
 - **Key differences**:
@@ -62,7 +66,6 @@ function TripSummary() {
   - Analytics/tracking data
   - Caching expensive calculations
   - Storing previous prop values
-- Changing `ref.current` doesn't cause component re-render
 
 **Before (Anti-pattern):**
 
@@ -108,9 +111,9 @@ function Timer() {
 }
 ```
 
-## Redundant state
+### Redundant State
 
-- Single source of truth for each piece of data
+- **Rule**: Single source of truth for each piece of data
 - **Anti-pattern**: Storing the same data in multiple places
 - **Best practice**: Store minimal state, derive everything else
 - **Common redundancy patterns**:
@@ -183,23 +186,32 @@ function HotelSelection() {
 }
 ```
 
----
+## Exercise: Fix State Anti-patterns
 
-## Exercises
+**Goal**: Refactor components to follow React state best practices
 
-1. Fix Derived State Anti-patterns
+You'll work on three components that demonstrate common state management anti-patterns. Your task is to refactor them to follow best practices while maintaining the same functionality.
 
-   **Goal**: Remove unnecessary state and effects by deriving values instead
+### Tasks:
 
-2. Convert useState to useRef
+1. **Fix Derived State Anti-patterns**
 
-   **Goal**: Use `useRef` for values that don't need to trigger re-renders
+   - Remove unnecessary state and effects
+   - Calculate derived values directly in render
+   - Use `useMemo` only when needed
 
-3. Eliminate Redundant State
+2. **Convert useState to useRef**
 
-   **Goal**: Store minimal state and derive everything else
+   - Identify values that don't need re-renders
+   - Replace `useState` with `useRef` where appropriate
+   - Ensure cleanup is handled properly
 
-### Success Criteria
+3. **Eliminate Redundant State**
+   - Store minimal required state
+   - Derive values instead of duplicating state
+   - Use proper data normalization
+
+### Success Criteria:
 
 After completing the exercises, each component should:
 

@@ -13,29 +13,7 @@
   - Easier to understand relationships between data
   - Less boilerplate code for state management
 
-### Eliminating Derived State
-
-- **Rule**: If you can calculate it, don't store it
-- **Anti-pattern**: Using `useState` + `useEffect` to sync derived data
-- **Best practice**: Calculate derived values directly in render or with `useMemo`
-- **Benefits**:
-  - Eliminates synchronization bugs
-  - Reduces state complexity
-  - Automatically stays in sync with source data
-  - Better performance with fewer re-renders
-
-### Removing Redundant State
-
-- **Rule**: Single source of truth for each piece of data
-- **Anti-pattern**: Storing the same data in multiple places (like full objects when only ID is needed)
-- **Best practice**: Store minimal state and derive everything else
-- **Benefits**:
-  - Prevents synchronization bugs when data gets out of sync
-  - Simpler update logic
-  - Reduced memory usage
-  - Easier debugging and maintenance
-
-**Before (Anti-patterns):**
+**Before:**
 
 ```tsx
 // ❌ Multiple individual states for related data
@@ -44,19 +22,11 @@ const [departure, setDeparture] = useState('');
 const [arrival, setArrival] = useState('');
 const [passengers, setPassengers] = useState(1);
 
-// ❌ Redundant state - storing full object and ID
-const [flights, setFlights] = useState([]);
-const [selectedFlight, setSelectedFlight] = useState(null);
-const [selectedFlightId, setSelectedFlightId] = useState(null);
-
-// ❌ Derived state stored separately
-const [totalCost, setTotalCost] = useState(0);
-useEffect(() => {
-  setTotalCost(selectedFlight?.price || 0);
-}, [selectedFlight]);
+// Updating a single field
+setDestination('Paris');
 ```
 
-**After (Best practices):**
+**After:**
 
 ```tsx
 // ✅ Combined related state
@@ -67,13 +37,16 @@ const [searchForm, setSearchForm] = useState({
   passengers: 1,
 });
 
-// ✅ Single source of truth - only store ID
-const [flights, setFlights] = useState([]);
-const [selectedFlightId, setSelectedFlightId] = useState(null);
+// Updating a single field
+setSearchForm({
+  ...searchForm,
+  destination: 'Paris',
+});
 
-// ✅ Derived state calculated directly
-const selectedFlight = flights.find((f) => f.id === selectedFlightId);
-const totalCost = selectedFlight?.price || 0;
+setSearchForm((prev) => ({
+  ...prev,
+  destination: 'Paris',
+}));
 ```
 
 ### Type States for Better Modeling
@@ -99,6 +72,8 @@ type State =
   | { status: 'loading' }
   | { status: 'error'; error: string }
   | { status: 'success'; data: FlightData };
+
+const [state, setState] = useState<State>({ status: 'idle' });
 ```
 
 ---

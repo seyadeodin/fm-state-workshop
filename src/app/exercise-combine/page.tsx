@@ -7,14 +7,6 @@ import { Switch } from '@/components/ui/switch';
 import { useEffect, useState } from 'react';
 import { getFlightOptions } from '@/app/exerciseUtils';
 
-const enum FormState {
-  IDLE = 'IDLE',
-  SUBMITTING = 'SUBMITTING',
-  ERROR = 'ERROR',
-  SUCCESS = 'SUCCESS',
-  SELECTED = 'SELECTED',
-}
-
 interface FlightOption {
   id: string;
   airline: string;
@@ -27,7 +19,9 @@ function FlightBooking() {
   const [departure, setDeparture] = useState('');
   const [arrival, setArrival] = useState('');
   const [passengers, setPassengers] = useState(1);
-  const [formState, setFormState] = useState<FormState>(FormState.IDLE);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [flightOptions, setFlightOptions] = useState<FlightOption[]>([]);
   const [isRoundtrip, setIsRoundtrip] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState<FlightOption | null>(
@@ -44,7 +38,9 @@ function FlightBooking() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setFormState(FormState.SUBMITTING);
+    setIsSubmitting(true);
+    setIsError(false);
+    setIsSuccess(false);
     setSelectedFlight(null);
 
     try {
@@ -56,15 +52,15 @@ function FlightBooking() {
       });
 
       setFlightOptions(flights);
-      setFormState(FormState.SUCCESS);
+      setIsSuccess(true);
     } catch {
-      setFormState(FormState.ERROR);
+      setIsSubmitting(false);
+      setIsError(true);
     }
   };
 
   const handleFlightSelect = (flight: FlightOption) => {
     setSelectedFlight(flight);
-    setFormState(FormState.SELECTED);
   };
 
   return (
@@ -137,24 +133,18 @@ function FlightBooking() {
           />
         </div>
 
-        <Button
-          type="submit"
-          disabled={formState === FormState.SUBMITTING}
-          className="w-full"
-        >
-          {formState === FormState.SUBMITTING
-            ? 'Searching...'
-            : 'Search Flights'}
+        <Button type="submit" disabled={isSubmitting} className="w-full">
+          {isSubmitting ? 'Searching...' : 'Search Flights'}
         </Button>
       </form>
 
-      {formState === FormState.ERROR && (
+      {isError && (
         <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
           An error occurred while searching for flights. Please try again.
         </div>
       )}
 
-      {formState === FormState.SUCCESS && flightOptions.length > 0 && (
+      {isSuccess && flightOptions.length > 0 && (
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Available Flights</h2>
           <div className="space-y-4">
@@ -188,7 +178,7 @@ function FlightBooking() {
         </div>
       )}
 
-      {formState === FormState.SELECTED && selectedFlight && (
+      {selectedFlight && (
         <div className="mt-8 p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-2">Booking Summary</h3>
           <div className="space-y-2">
