@@ -74,10 +74,3 @@ pnpm test
 - [TanStack Query Documentation](https://tanstack.com/query)
 
 Happy coding! 🚀
-
----
-
-- Who is this for?
-- What am I going to get out of this?
-- What is the structure of the workshop?
-- Caveats: adding to your toolset, it's not a strict set of rules, it's a set of patterns and anti-patterns to help you make better decisions.
