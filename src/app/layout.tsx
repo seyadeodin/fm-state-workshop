@@ -1,12 +1,12 @@
-import { Noto_Sans } from 'next/font/google';
-import { NuqsAdapter } from 'nuqs/adapters/next/app';
-import './globals.css';
-import Link from 'next/link';
+import { Noto_Sans } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+import "./globals.css";
+import Link from "next/link";
 
 const notoSans = Noto_Sans({
-  weight: ['400', '500', '700', '900'],
-  subsets: ['latin'],
-  variable: '--font-noto-sans',
+  weight: ["400", "500", "700", "900"],
+  subsets: ["latin"],
+  variable: "--font-noto-sans",
 });
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html>
       <head>
         <link
           rel="preconnect"
