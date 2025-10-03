@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { createStore } from '@xstate/store';
-import { useSelector } from '@xstate/store/react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { createStore } from "@xstate/store";
+import { useSelector } from "@xstate/store/react";
 
 // Types
 const enum Step {
-  FlightSearch = 'FlightSearch',
-  FlightResults = 'FlightResults',
-  HotelSearch = 'HotelSearch',
-  HotelResults = 'HotelResults',
-  Review = 'Review',
-  Confirmation = 'Confirmation',
+  FlightSearch = "FlightSearch",
+  FlightResults = "FlightResults",
+  HotelSearch = "HotelSearch",
+  HotelResults = "HotelResults",
+  Review = "Review",
+  Confirmation = "Confirmation",
 }
 
 interface FlightOption {
@@ -51,21 +51,23 @@ interface BookingState {
   selectedHotel: HotelOption | null;
 }
 
+type HotelSearch = Partial<BookingState["hotelSearch"]>;
+
 const initialState: BookingState = {
   currentStep: Step.FlightSearch,
   flightSearch: {
-    destination: '',
-    departure: '',
-    arrival: '',
+    destination: "",
+    departure: "",
+    arrival: "",
     passengers: 1,
     isOneWay: false,
   },
   selectedFlight: null,
   hotelSearch: {
-    checkIn: '',
-    checkOut: '',
+    checkIn: "",
+    checkOut: "",
     guests: 1,
-    roomType: 'standard',
+    roomType: "standard",
   },
   selectedHotel: null,
 };
@@ -281,9 +283,9 @@ function FlightSearchResults() {
   );
 
   const mockFlights: FlightOption[] = [
-    { id: '1', airline: 'Sky Airways', price: 299, duration: '2h 30m' },
-    { id: '2', airline: 'Ocean Air', price: 349, duration: '2h 45m' },
-    { id: '3', airline: 'Mountain Express', price: 279, duration: '3h 15m' },
+    { id: "1", airline: "Sky Airways", price: 299, duration: "2h 30m" },
+    { id: "2", airline: "Ocean Air", price: 349, duration: "2h 45m" },
+    { id: "3", airline: "Mountain Express", price: 279, duration: "3h 15m" },
   ];
 
   const handleSelectFlight = (flight: FlightOption) => {
@@ -310,8 +312,8 @@ function FlightSearchResults() {
             key={flight.id}
             className={`p-4 border rounded hover:shadow-md ${
               selectedFlight?.id === flight.id
-                ? 'border-blue-500 bg-blue-50'
-                : ''
+                ? "border-blue-500 bg-blue-50"
+                : ""
             }`}
           >
             <div className="flex justify-between items-center">
@@ -441,25 +443,25 @@ function HotelSearchResults() {
 
   const mockHotels: HotelOption[] = [
     {
-      id: '1',
-      name: 'Grand Hotel',
+      id: "1",
+      name: "Grand Hotel",
       price: 199,
       rating: 4.5,
-      amenities: ['Pool', 'Spa', 'Restaurant'],
+      amenities: ["Pool", "Spa", "Restaurant"],
     },
     {
-      id: '2',
-      name: 'Seaside Resort',
+      id: "2",
+      name: "Seaside Resort",
       price: 249,
       rating: 4.8,
-      amenities: ['Beach Access', 'Pool', 'Bar'],
+      amenities: ["Beach Access", "Pool", "Bar"],
     },
     {
-      id: '3',
-      name: 'City Center Hotel',
+      id: "3",
+      name: "City Center Hotel",
       price: 179,
       rating: 4.2,
-      amenities: ['Gym', 'Restaurant', 'Business Center'],
+      amenities: ["Gym", "Restaurant", "Business Center"],
     },
   ];
 
@@ -486,7 +488,7 @@ function HotelSearchResults() {
           <div
             key={hotel.id}
             className={`p-4 border rounded hover:shadow-md ${
-              selectedHotel?.id === hotel.id ? 'border-blue-500 bg-blue-50' : ''
+              selectedHotel?.id === hotel.id ? "border-blue-500 bg-blue-50" : ""
             }`}
           >
             <div className="flex justify-between items-center">
@@ -494,7 +496,7 @@ function HotelSearchResults() {
                 <h3 className="font-medium">{hotel.name}</h3>
                 <p className="text-gray-600">Rating: {hotel.rating}/5</p>
                 <p className="text-sm text-gray-500">
-                  {hotel.amenities.join(', ')}
+                  {hotel.amenities.join(", ")}
                 </p>
               </div>
               <div className="text-right">
