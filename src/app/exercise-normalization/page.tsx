@@ -15,13 +15,13 @@ import { Trash2, Plus, MapPin, CheckSquare } from "lucide-react";
 
 // Types
 interface TodoItem {
-  id: string;
+  id: TodoId;
   text: string;
-  destinationId: string;
+  destinationId: DestinationId;
 }
 
 interface Destination {
-  id: string;
+  id: DestinationId;
   name: string;
 }
 
@@ -32,23 +32,19 @@ interface ItineraryState {
   undos: Action[];
 }
 
-// Initially I thought on creating an event type to store the state of each event
-// but the action already serves as a more specific alraedy crafted solution
-// which allow us to simply re-run an action or run the opposite action in the
-// case
-type EventType = {
-  action: Action["type"];
-  destination?: Destination;
-  todo?: TodoItem;
-};
+type Brand<B> = string & { __brand: B };
+
+type DestinationId = Brand<"DestinationId">;
+
+type TodoId = Brand<"TodoId">;
 
 // Action types
 type Action =
-  | { type: "ADD_DESTINATION" }
-  | { type: "UPDATE_DESTINATION"; destinationId: string; name: string }
-  | { type: "DELETE_DESTINATION"; destinationId: string }
-  | { type: "ADD_TODO"; destinationId: string; text: string }
-  | { type: "DELETE_TODO"; destinationId: string; todoId: string }
+  | { type: "ADD_DESTINATION"; id: string }
+  | { type: "UPDATE_DESTINATION"; destinationId: DestinationId; name: string }
+  | { type: "DELETE_DESTINATION"; destinationId: DestinationId }
+  | { type: "ADD_TODO"; id: string; destinationId: DestinationId; text: string }
+  | { type: "DELETE_TODO"; todoId: TodoId }
   | { type: "UNDO" }
   | { type: "REDO" };
 
@@ -84,82 +80,73 @@ function itineraryReducer(
       undos,
     };
   }
-
   if (action.type === "REDO") {
-    //const undos = [...state.undos];
-    //const lastEvent = undos.pop();
     const lastEvent = state.undos[state.undos.length - 1];
-    console.log("🚀 ~ itineraryReducer ~ lastEvent:", lastEvent);
     if (!lastEvent) return state;
-
     const newState = itineraryReducer(state, lastEvent);
-
     return {
       ...newState,
       events: [...state.events, lastEvent],
-
       undos: state.undos.slice(0, -1),
     };
   }
 
   const events = state.events.concat(action);
+
   switch (action.type) {
     case "ADD_DESTINATION":
-      const newDestination = { id: crypto.randomUUID(), name: "" };
       return {
         ...state,
-        destinations: [...state.destinations, newDestination],
-        todos: [],
         events,
-
         undos: [],
+        destinations: [
+          ...state.destinations,
+          { id: action.id as DestinationId, name: "" },
+        ],
       };
     case "UPDATE_DESTINATION":
       return {
         ...state,
+        events,
+        undos: [],
         destinations: state.destinations.map((dest) =>
           dest.id === action.destinationId
             ? { ...dest, name: action.name }
             : dest
         ),
-        events,
-
-        undos: [],
       };
     case "DELETE_DESTINATION":
       return {
         ...state,
+        events,
+        undos: [],
         destinations: state.destinations.filter(
           (dest) => dest.id !== action.destinationId
         ),
-
-        events,
-        undos: [],
+        todos: state.todos.filter(
+          (todo) => todo.destinationId === action.destinationId
+        ),
       };
     case "ADD_TODO":
       return {
         ...state,
+        events,
+        undos: [],
         todos: [
           ...state.todos,
           {
-            id: crypto.randomUUID(),
+            id: crypto.randomUUID() as TodoId,
             text: action.text,
             destinationId: action.destinationId,
           },
         ],
-        events,
-        undos: [],
       };
     case "DELETE_TODO":
       return {
         ...state,
-        todos: state.todos.filter(
-          (todo) =>
-            todo.id !== action.todoId &&
-            todo.destinationId !== action.destinationId
-        ),
         events,
         undos: [],
+        todos: state.todos.filter((todo) => todo.id !== action.todoId),
       };
     default:
       return state;
@@ -167,16 +154,11 @@ function itineraryReducer(
 }
 
 export default function ItineraryPage() {
-  const [state, dispatch] = useReducer(itineraryReducer, {
-    destinations: [],
-    todos: [],
-    events: [],
-    undos: [],
-  });
+  const [state, dispatch] = useReducer(itineraryReducer, initialState);
   const lastInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddDestination = () => {
-    dispatch({ type: "ADD_DESTINATION" });
+    dispatch({ type: "ADD_DESTINATION", id: crypto.randomUUID() });
     // Focus the new input after render
     setTimeout(() => {
       lastInputRef.current?.focus();
@@ -210,131 +192,42 @@ export default function ItineraryPage() {
               </CardContent>
             </Card>
           ) : (
-            state.destinations.map((destination, index) => {
-              const todos = state.todos.filter(
-                (todo) => todo.destinationId === destination.id
-              );
-              return (
-                <Card key={destination.id} className="relative">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-primary" />
-                      <CardTitle className="flex-1">
-                        <Input
-                          type="text"
-                          value={destination.name}
-                          onChange={(e) =>
-                            dispatch({
-                              type: "UPDATE_DESTINATION",
-                              destinationId: destination.id,
-                              name: e.target.value,
-                            })
-                          }
-                          placeholder="Enter destination name"
-                          className="text-lg font-semibold border-none px-0 focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary rounded-none"
-                          ref={
-                            index === state.destinations.length - 1
-                              ? lastInputRef
-                              : null
-                          }
-                        />
-                      </CardTitle>
-                    </div>
-                    <CardAction>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          dispatch({
-                            type: "DELETE_DESTINATION",
-                            destinationId: destination.id,
-                          })
-                        }
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </CardAction>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        const form = e.target as HTMLFormElement;
-                        const input = form.elements.namedItem(
-                          "todo"
-                        ) as HTMLInputElement;
-                        if (input.value.trim()) {
-                          dispatch({
-                            type: "ADD_TODO",
-                            destinationId: destination.id,
-                            text: input.value.trim(),
-                          });
-                          input.value = "";
-                        }
-                      }}
-                      className="flex gap-2"
-                    >
-                      <Input
-                        type="text"
-                        name="todo"
-                        placeholder="Add a todo item (e.g., Visit museum, Try local cuisine)"
-                        className="flex-1"
-                      />
-                      <Button type="submit" size="sm">
-                        <Plus className="h-4 w-4" />
-                        Add
-                      </Button>
-                    </form>
-
-                    {todos.length > 0 ? (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckSquare className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium text-muted-foreground">
-                            Things to do
-                          </span>
-                          <Badge variant="secondary">{todos.length}</Badge>
-                        </div>
-                        <ul className="space-y-2">
-                          {todos.map((todo) => (
-                            <li
-                              key={todo.id}
-                              className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors"
-                            >
-                              <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />
-                              <span className="flex-1 text-sm">
-                                {todo.text}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  dispatch({
-                                    type: "DELETE_TODO",
-                                    destinationId: destination.id,
-                                    todoId: todo.id,
-                                  })
-                                }
-                                className="text-muted-foreground hover:text-destructive h-auto p-1"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : (
-                      <div className="text-center py-4 text-muted-foreground text-sm">
-                        No activities added yet. Add some things to do at this
-                        destination!
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })
+            state.destinations.map((destination) => (
+              <DestinationCard
+                key={destination.id}
+                destination={destination}
+                todos={state.todos.filter(
+                  (todo) => todo.destinationId === destination.id
+                )}
+                onUpdate={(destination) => {
+                  dispatch({
+                    type: "UPDATE_DESTINATION",
+                    destinationId: destination.id,
+                    name: destination.name,
+                  });
+                }}
+                onDelete={(destination) => {
+                  dispatch({
+                    type: "DELETE_DESTINATION",
+                    destinationId: destination.id,
+                  });
+                }}
+                onAddTodo={(data) => {
+                  dispatch({
+                    type: "ADD_TODO",
+                    id: crypto.randomUUID(),
+                    destinationId: data.destinationId,
+                    text: data.text,
+                  });
+                }}
+                onDeleteTodo={(todoId) => {
+                  dispatch({
+                    type: "DELETE_TODO",
+                    todoId,
+                  });
+                }}
+              />
+            ))
           )}
         </div>
       </div>
@@ -343,22 +236,132 @@ export default function ItineraryPage() {
         <Button
           variant="outline"
           disabled={state.events.length === 0}
-          onClick={() => {
-            dispatch({ type: "UNDO" });
-          }}
+          onClick={() => dispatch({ type: "UNDO" })}
         >
           Undo
         </Button>
         <Button
           variant="outline"
           disabled={state.undos.length === 0}
-          onClick={() => {
-            dispatch({ type: "REDO" });
-          }}
+          onClick={() => dispatch({ type: "REDO" })}
         >
           Redo
         </Button>
       </div>
     </div>
+  );
+}
+
+function DestinationCard({
+  destination,
+  todos,
+  onUpdate,
+  onDelete,
+  onAddTodo,
+  onDeleteTodo,
+}: {
+  destination: Destination;
+  todos: TodoItem[];
+  onUpdate: (destination: Destination) => void;
+  onDelete: (destination: Destination) => void;
+  onAddTodo: (data: { destinationId: DestinationId; text: string }) => void;
+  onDeleteTodo: (todoId: TodoId) => void;
+}) {
+  return (
+    <Card key={destination.id} className="relative">
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <MapPin className="h-5 w-5 text-primary" />
+          <CardTitle className="flex-1">
+            <Input
+              type="text"
+              defaultValue={destination.name}
+              onBlur={(e) =>
+                onUpdate({
+                  ...destination,
+                  name: e.target.value,
+                })
+              }
+              placeholder="Enter destination name"
+              className="text-lg font-semibold border-none px-0 focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-primary rounded-none"
+            />
+          </CardTitle>
+        </div>
+        <CardAction>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(destination)}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </CardAction>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const form = e.target as HTMLFormElement;
+            const input = form.elements.namedItem("todo") as HTMLInputElement;
+            if (input.value.trim()) {
+              onAddTodo({
+                destinationId: destination.id,
+                text: input.value.trim(),
+              });
+              input.value = "";
+            }
+          }}
+          className="flex gap-2"
+        >
+          <Input
+            type="text"
+            name="todo"
+            placeholder="Add a todo item (e.g., Visit museum, Try local cuisine)"
+            className="flex-1"
+          />
+          <Button type="submit" size="sm">
+            <Plus className="h-4 w-4" />
+            Add
+          </Button>
+        </form>
+
+        {todos.length > 0 ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckSquare className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">
+                Things to do
+              </span>
+              <Badge variant="secondary">{todos.length}</Badge>
+            </div>
+            <ul className="space-y-2">
+              {todos.map((todo) => (
+                <li
+                  key={todo.id}
+                  className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                >
+                  <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0" />
+                  <span className="flex-1 text-sm">{todo.text}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onDeleteTodo(todo.id)}
+                    className="text-muted-foreground hover:text-destructive h-auto p-1"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div className="text-center py-4 text-muted-foreground text-sm">
+            No activities added yet. Add some things to do at this destination!
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
