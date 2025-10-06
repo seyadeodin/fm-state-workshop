@@ -17,16 +17,19 @@ import { Trash2, Plus, MapPin, CheckSquare } from 'lucide-react';
 interface TodoItem {
   id: string;
   text: string;
+  destinationId: string;
 }
 
 interface Destination {
   id: string;
   name: string;
-  todos: TodoItem[];
 }
 
 interface ItineraryState {
   destinations: Destination[];
+  todos: TodoItem[];
+  events:  Action[];
+  undos: Action[];
 }
 
 // Action types
@@ -48,8 +51,9 @@ function itineraryReducer(
         ...state,
         destinations: [
           ...state.destinations,
-          { id: crypto.randomUUID(), name: '', todos: [] },
+          { id: crypto.randomUUID(), name: '' },
         ],
+        todos: []
       };
     case 'UPDATE_DESTINATION':
       return {
@@ -70,29 +74,12 @@ function itineraryReducer(
     case 'ADD_TODO':
       return {
         ...state,
-        destinations: state.destinations.map((dest) =>
-          dest.id === action.destinationId
-            ? {
-                ...dest,
-                todos: [
-                  ...dest.todos,
-                  { id: crypto.randomUUID(), text: action.text },
-                ],
-              }
-            : dest
-        ),
+        todos: [...state.todos, {id: crypto.randomUUID(), text:action.text, destinationId: action.destinationId}],
       };
     case 'DELETE_TODO':
       return {
         ...state,
-        destinations: state.destinations.map((dest) =>
-          dest.id === action.destinationId
-            ? {
-                ...dest,
-                todos: dest.todos.filter((todo) => todo.id !== action.todoId),
-              }
-            : dest
-        ),
+        todos: state.todos.filter((todo) => todo.id !== action.todoId && todo.destinationId !== action.destinationId),
       };
     default:
       return state;
@@ -102,6 +89,9 @@ function itineraryReducer(
 export default function ItineraryPage() {
   const [state, dispatch] = useReducer(itineraryReducer, {
     destinations: [],
+    todos: [],
+    events: [],
+    undos: [],
   });
   const lastInputRef = useRef<HTMLInputElement>(null);
 
@@ -140,7 +130,9 @@ export default function ItineraryPage() {
               </CardContent>
             </Card>
           ) : (
-            state.destinations.map((destination, index) => (
+            state.destinations.map((destination, index) => {
+                const todos = state.todos.filter(todo => todo.destinationId === destination.id)
+                return(
               <Card key={destination.id} className="relative">
                 <CardHeader>
                   <div className="flex items-center gap-2">
@@ -214,7 +206,7 @@ export default function ItineraryPage() {
                     </Button>
                   </form>
 
-                  {destination.todos.length > 0 ? (
+                  {todos.length > 0 ? (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 mb-2">
                         <CheckSquare className="h-4 w-4 text-muted-foreground" />
@@ -222,11 +214,11 @@ export default function ItineraryPage() {
                           Things to do
                         </span>
                         <Badge variant="secondary">
-                          {destination.todos.length}
+                          {todos.length}
                         </Badge>
                       </div>
                       <ul className="space-y-2">
-                        {destination.todos.map((todo) => (
+                        {todos.map((todo) => (
                           <li
                             key={todo.id}
                             className="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 transition-colors"
@@ -259,7 +251,7 @@ export default function ItineraryPage() {
                   )}
                 </CardContent>
               </Card>
-            ))
+            )})
           )}
         </div>
       </div>

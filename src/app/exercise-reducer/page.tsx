@@ -4,43 +4,118 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useState } from 'react';
+import { use, useReducer, useState, createContext } from 'react';
 import { FlightOption, getFlightOptions } from '@/app/exerciseUtils';
 
-interface SearchResultsProps {
-  flightOptions: FlightOption[];
+type FormFields = {
+  destination: string;
+  departure: string;
+  arrival: string;
   passengers: number;
-  onBack: () => void;
+  isOneWay: boolean;
 }
 
+type State = {
+  flightOptions?: FlightOption[];
+  error?: string;
+  passengers?: number;
+} & (
+    |
+    { status: "idle" } | { status: "error"; error: string } | { status: "submitting" } | { status: "complete"; flightOptions: FlightOption[]; passengers: number }
+  )
+
+type Action = {
+  flightOptions?: FlightOption[];
+  error?: string;
+} & (| 
+  {
+    type: "getResults";
+    flightOptions: FlightOption[];
+    passengers: number;
+  } | {
+    type: "showError";
+    error: string;
+  } | {
+    type: "submit" | "back";
+  }
+)
+
+
+function flowReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "submit":
+      return {
+        ...state,
+        status: "submitting"
+      }
+    case "getResults":
+      return {
+        ...state,
+        passengers: action.passengers,
+        flightOptions: action.flightOptions,
+        status: "complete"
+      }
+    case "showError":
+      return {
+        ...state,
+        error: action.error,
+        status: "error"
+      }
+    case "back":
+      return {
+        status: "idle"
+      }
+  }
+
+}
+
+const FlightsContext = createContext<{
+  state: State;
+  dispatch: (action: Action) => void;
+}>({} as {state: State; dispatch: (acion: Action) => void});
+
+function FlightsProvider({ children }: { children: React.ReactNode }) {
+  const  [state, dispatch] = useReducer(flowReducer, { status: "idle" })
+
+  return (
+    <FlightsContext.Provider value={{ state, dispatch }}>
+      {children}
+    </FlightsContext.Provider>
+  )
+}
+
+
+
 function SearchResults({
-  flightOptions,
-  passengers,
-  onBack,
-}: SearchResultsProps) {
+} ) {
+  const { dispatch, state } = use(FlightsContext);
   const [selectedFlight, setSelectedFlight] = useState<FlightOption | null>(
     null
   );
+
+  if(state.status !== "complete") { return <div>Unexpected error</div>}
+
+  const passengers = state.passengers ?? 0;
   const totalPrice = selectedFlight ? selectedFlight.price * passengers : 0;
+
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Search Results</h2>
-        <Button variant="outline" onClick={onBack}>
+        <Button variant="outline" onClick={() => dispatch({type: "back"})}>
           Back to Search
         </Button>
       </div>
 
       <div className="space-y-4">
-        {flightOptions.map((flight) => (
+        {state.flightOptions.map((flight) => (
           <div
             key={flight.id}
-            className={`p-4 border rounded hover:shadow-md ${
-              selectedFlight?.id === flight.id
-                ? 'border-blue-500 bg-blue-50'
-                : ''
-            }`}
+            className={`p-4 border rounded hover:shadow-md ${selectedFlight?.id === flight.id
+              ? 'border-blue-500 bg-blue-50'
+              : ''
+              }`}
           >
             <div className="flex justify-between items-center">
               <div>
@@ -76,40 +151,49 @@ function SearchResults({
   );
 }
 
-function BookingForm({
-  onSubmit,
-  isSubmitting,
-}: {
-  onSubmit: (formData: {
-    destination: string;
-    departure: string;
-    arrival: string;
-    passengers: number;
-    isOneWay: boolean;
-  }) => void;
-  isSubmitting: boolean;
-}) {
-  const [destination, setDestination] = useState('');
-  const [departure, setDeparture] = useState('');
-  const [arrival, setArrival] = useState('');
-  const [passengers, setPassengers] = useState(1);
+function BookingForm() {
   const [isOneWay, setIsOneWay] = useState(false);
+  const { dispatch, state } = use(FlightsContext)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const isSubmitting = state.status === "submitting"
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onSubmit({
-      destination,
-      departure,
-      arrival,
-      passengers,
-      isOneWay,
-    });
+    const formData = new FormData(e.target)
+
+    const formFields: FormFields = {
+      arrival: formData.get("arrival")?.toString() ?? "",
+      departure: formData.get("departure")?.toString() ?? "",
+      destination: formData.get("destination")?.toString() ?? "",
+      isOneWay: isOneWay,
+      passengers:  Number(formData.get("passengers")),
+    }
+
+    dispatch({
+      type: "submit",
+    })
+
+    //setSearchParams(formData);
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      const mockFlights = await getFlightOptions(formFields);
+      dispatch({
+        type: "getResults",
+        passengers: formFields.passengers,
+        flightOptions: mockFlights
+      })
+    } catch {
+      dispatch({ type: "showError", error: "An error occurred while searching for flights. Please try again." });
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center space-x-2 mb-4">
-        <Switch id="one-way" checked={isOneWay} onCheckedChange={setIsOneWay} />
+        <Switch id="one-way" name="one-way" checked={isOneWay} onCheckedChange={setIsOneWay} />
         <Label htmlFor="one-way">One-way flight</Label>
       </div>
 
@@ -120,8 +204,8 @@ function BookingForm({
         <Input
           type="text"
           id="destination"
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
+          name="destination"
+          defaultValue={"Salvador"}
           required
         />
       </div>
@@ -133,8 +217,8 @@ function BookingForm({
         <Input
           type="date"
           id="departure"
-          value={departure}
-          onChange={(e) => setDeparture(e.target.value)}
+          name="departure"
+          defaultValue={"2025-01-01"}
           required
         />
       </div>
@@ -147,8 +231,8 @@ function BookingForm({
           <Input
             type="date"
             id="arrival"
-            value={arrival}
-            onChange={(e) => setArrival(e.target.value)}
+            name="arrival"
+            defaultValue={"2025-01-01"}
             required
           />
         </div>
@@ -161,8 +245,7 @@ function BookingForm({
         <Input
           type="number"
           id="passengers"
-          value={passengers}
-          onChange={(e) => setPassengers(parseInt(e.target.value))}
+          name="passengers"
           min="1"
           max="9"
           required
@@ -176,64 +259,52 @@ function BookingForm({
   );
 }
 
-export default function Page() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isError, setIsError] = useState(false);
-  const [flightOptions, setFlightOptions] = useState<FlightOption[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [searchParams, setSearchParams] = useState<{
-    destination: string;
-    departure: string;
-    arrival: string;
-    passengers: number;
-    isOneWay: boolean;
-  } | null>(null);
+export function FlightsContent() {
+  const { state } = use(FlightsContext)
 
-  const handleSubmit = async (formData: {
-    destination: string;
-    departure: string;
-    arrival: string;
-    passengers: number;
-    isOneWay: boolean;
-  }) => {
-    setIsSubmitting(true);
-    setIsError(false);
-    setSearchParams(formData);
+  const isSubmitting = state.status === "submitting";
+  const isError = state.status === "error";
+  const isComplete = state.status === "complete";
+  const  isIdle = state.status === "idle";
 
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const mockFlights = await getFlightOptions(formData);
-      setFlightOptions(mockFlights);
-      setShowResults(true);
-    } catch {
-      setIsError(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
-  return (
+  return(
     <div className="w-full max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Flight Booking</h1>
 
-      {!showResults ? (
-        <>
-          <BookingForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
-          {isError && (
-            <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
-              An error occurred while searching for flights. Please try again.
-            </div>
-          )}
-        </>
-      ) : (
-        <SearchResults
-          flightOptions={flightOptions}
-          passengers={searchParams?.passengers || 1}
-          onBack={() => setShowResults(false)}
-        />
+      {
+        isIdle &&
+          <BookingForm />
+      }
+
+      {isError && (
+        <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
+          {state.error}
+        </div>
+      )}
+
+      {
+        isSubmitting && (
+          <div>Carregando</div>
+        )
+      }
+
+      {isComplete && (
+          <SearchResults/>
       )}
     </div>
+  )
+
+}
+
+
+export default function Page() {
+
+  return (
+    <FlightsProvider>
+      <FlightsContent/>
+    </FlightsProvider>
   );
 }
+
